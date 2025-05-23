@@ -11,10 +11,8 @@ export default function Login() {
 
   const loginEmailSenha = async (e) => {
     e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      navigate('/');
-    } catch (err) {
+    try { await signInWithEmailAndPassword(auth, email, senha); navigate('/');} 
+    catch (err) {
       setErro('Email ou senha inválidos');
     }
   };
@@ -30,57 +28,25 @@ export default function Login() {
 
   const redefinirSenha = async () => {
     if (!email) return setErro('Digite seu e-mail para redefinir');
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setErro('Link de redefinição enviado para seu e-mail');
-    } catch {
-      setErro('Erro ao enviar e-mail');
-    }
+    try {await sendPasswordResetEmail(auth, email);
+    setErro('Link de redefinição enviado para seu e-mail');
+    } catch { setErro('Erro ao enviar e-mail');}
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-4">Login do Sistema</h1>
-
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 to-blue-900 p-5">
+      <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-sm text-center">
+        <img src="/Reciclar_LOGO.png" alt="Logo" className="w-24 mx-auto mb-6" />
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar</h2>
         {erro && <p className="text-red-500 text-sm mb-2">{erro}</p>}
-
         <form onSubmit={loginEmailSenha} className="space-y-4">
-          <input
-            type="email"
-            placeholder="E-mail"
-            className="w-full px-4 py-2 border rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            className="w-full px-4 py-2 border rounded"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
-            Entrar
-          </button>
+          <input type="email" placeholder="E-mail" className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" placeholder="Senha" className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50" value={senha} onChange={(e) => setSenha(e.target.value)}  />
+          <button type="submit"  className="w-full py-3 rounded-lg bg-gradient-to-br from-purple-700 to-blue-800 text-white font-semibold hover:from-pink-500 hover:to-purple-700 transition duration-300 mb-3">Acessar Plataforma</button>
         </form>
-
-        <button
-          onClick={loginGoogle}
-          className="w-full mt-4 bg-red-500 text-white py-2 rounded hover:bg-red-600"
-        >
-          Entrar com Google
-        </button>
-
-        <button
-          onClick={redefinirSenha}
-          className="w-full mt-2 text-sm text-blue-600 hover:underline"
-        >
-          Esqueci minha senha
-        </button>
+        <button onClick={loginGoogle}
+          className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2 rounded shadow hover:bg-gray-100"><img src="../iconGoogle.png" alt="Google" className="w-5 h-5" /><span>Entrar com Google</span></button>        
+        <button onClick={redefinirSenha} className="w-full mt-2 text-sm text-blue-600 hover:underline">Esqueci minha senha</button>
       </div>
     </div>
   );
