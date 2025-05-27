@@ -8,9 +8,11 @@ import Home from './pages/home/index.jsx';
 import Login from './pages/auth/index.jsx';
 import ErrorPage from './components/ui/error/index.jsx';
 import HomeRegister from './pages/register/index.jsx';
-import CadastroEquipamento from "./pages/register/equipament/index.jsx";
 import CadastroToner from "./pages/register/toner/index.jsx";
 import PrivateRoutes from './routes/PrivateRoutes';
+import CadastroImpressora from './pages/register/impressora';
+import CadastroTablet from './pages/register/tablet';
+import CadastroNotebook from './pages/register/notebook/index.jsx';
 
 const router = createBrowserRouter([
   {
@@ -30,12 +32,20 @@ const router = createBrowserRouter([
             element: <HomeRegister />
           },
           {
-            path: '/register-equipament',
-            element: <CadastroEquipamento />
+            path: '/register-notebook',
+            element: <CadastroNotebook />
           },
           {
             path: '/register-toner',
             element: <CadastroToner />
+          },
+          {
+            path: '/register-impressora',
+            element: <CadastroImpressora />
+          },
+          {
+            path: '/register-tablet',
+            element: <CadastroTablet />
           },
         ]
       }

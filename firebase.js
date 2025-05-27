@@ -20,4 +20,4 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const database = getDatabase(app); // ou getFirestore(app) se usar Firestore
 
-export { auth, provider, database };
+export { auth, provider, database, app };

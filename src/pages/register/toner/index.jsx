@@ -1,17 +1,33 @@
-import { useState, useEffect } from "react";
-import { database } from "../../../../firebase"; // ajuste caminho conforme seu projeto
-import {
-  ref,
-  push,
-  get,
-  update,
-  query,
-  orderByChild,
-  equalTo,
-} from "firebase/database";
+import { useState } from "react";
+import { Input } from "../../../components/ui/input/input";
+import { Button } from "../../../components/ui/button/button";
+import { database } from "../../../../firebase";
+import { ref, push, get, update } from "firebase/database";
+import { Label } from "../../../components/ui/label/label";
+import { useNavigate } from "react-router-dom";
 
 const cores = ["Preto", "Ciano", "Magenta", "Amarelo"];
 const impressoras = ["HP", "BROTHER"];
+
+function Notification({ message, tipo = "info", onClose }) {
+  const bgColors = {
+    info: "bg-blue-500",
+    success: "bg-green-500",
+    error: "bg-red-500",
+  };
+
+  if (!message) return null;
+
+  setTimeout(onClose, 3000);
+
+  return (
+    <div
+      className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded shadow-lg text-white font-semibold ${bgColors[tipo]} z-50`}
+    >
+      {message}
+    </div>
+  );
+}
 
 export default function CadastroToner() {
   const [formData, setFormData] = useState({
@@ -21,46 +37,9 @@ export default function CadastroToner() {
     quantidade: 1,
   });
 
-  const [modalAberto, setModalAberto] = useState(false);
-  const [tonersCadastrados, setTonersCadastrados] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [notif, setNotif] = useState({ message: "", tipo: "info" });
+  const navigate = useNavigate();
 
-  // Função para carregar toners já cadastrados do Firebase
-  async function carregarToners() {
-    setLoading(true);
-    try {
-      const snapshot = await get(ref(database, "toners"));
-      const dados = snapshot.val() || {};
-      // Transforma objeto em array com id e dados
-      const lista = Object.entries(dados).map(([key, val]) => ({
-        id: key,
-        ...val,
-      }));
-      setTonersCadastrados(lista);
-    } catch (error) {
-      console.error("Erro ao carregar toners:", error);
-    }
-    setLoading(false);
-  }
-
-  // Abre modal e carrega toners
-  function abrirModal() {
-    setModalAberto(true);
-    carregarToners();
-  }
-
-  // Seleciona toner no modal e preenche formulário
-  function selecionarToner(toner) {
-    setFormData((prev) => ({
-      ...prev,
-      sku: toner.sku,
-      cor: toner.cor,
-      impressora: toner.impressora,
-    }));
-    setModalAberto(false);
-  }
-
-  // Handle form input change
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -69,188 +48,128 @@ export default function CadastroToner() {
     }));
   }
 
-  // Submit do formulário
   async function handleSubmit(e) {
     e.preventDefault();
     const { sku, cor, impressora, quantidade } = formData;
 
     if (!sku || quantidade < 1) {
-      alert("SKU e quantidade válidos são obrigatórios.");
+      setNotif({ message: "SKU e quantidade válidos são obrigatórios.", tipo: "error" });
       return;
     }
 
     try {
-      // Consultar se já existe toner com mesmo sku + impressora + cor
       const snapshot = await get(ref(database, "toners"));
       const dados = snapshot.val() || {};
 
-      // Buscar toner que bate os 3 critérios
       const tonerExistenteEntry = Object.entries(dados).find(
-        ([key, val]) =>
-          val.sku === sku &&
-          val.impressora === impressora &&
-          val.cor === cor
+        ([, val]) => val.sku === sku && val.impressora === impressora && val.cor === cor
       );
 
       if (tonerExistenteEntry) {
-        // Atualizar quantidade somando
         const [id, tonerExistente] = tonerExistenteEntry;
         const novaQuantidade = (tonerExistente.quantidade || 0) + quantidade;
-
-        await update(ref(database, "toners/" + id), {
-          quantidade: novaQuantidade,
-        });
-
-        alert(`Quantidade atualizada para ${novaQuantidade}`);
+        await update(ref(database, "toners/" + id), { quantidade: novaQuantidade });
+        setNotif({ message: `Quantidade atualizada para ${novaQuantidade}`, tipo: "success" });
       } else {
-        // Criar novo toner
-        await push(ref(database, "toners"), {
-          cor,
-          sku,
-          impressora,
-          quantidade,
-        });
-        alert("Toner cadastrado com sucesso!");
+        await push(ref(database, "toners"), { cor, sku, impressora, quantidade });
+        setNotif({ message: "Toner cadastrado com sucesso!", tipo: "success" });
       }
 
-      // Resetar formulário
-      setFormData({
-        cor: cores[0],
-        sku: "",
-        impressora: impressoras[0],
-        quantidade: 1,
-      });
+      setFormData({ cor: cores[0], sku: "", impressora: impressoras[0], quantidade: 1 });
     } catch (error) {
       console.error("Erro ao cadastrar toner:", error);
-      alert("Erro ao cadastrar toner.");
+      setNotif({ message: "Erro ao cadastrar toner.", tipo: "error" });
     }
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md mt-8">
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Cadastro de Toner de Impressora
-      </h2>
+    <>
+      <Notification
+        message={notif.message}
+        tipo={notif.tipo}
+        onClose={() => setNotif({ message: "", tipo: "info" })}
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 font-medium">Cor</label>
-          <select
-            name="cor"
-            value={formData.cor}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          >
-            {cores.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-gray-900 p-6">
+        <div className="bg-white p-9 rounded-lg shadow-lg w-full max-w-6xl">
+          <h2 className="text-center text-4xl font-bold text-gray-700 mb-6">
+            Cadastro de Toner de Impressora
+          </h2>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <Label className="block mb-1 font-medium">Cor</Label>
+              <select
+                name="cor"
+                value={formData.cor}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-lg"
+              >
+                {cores.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label className="block mb-1 font-medium">SKU</Label>
+              <Input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                placeholder="Digite o SKU"
+                className="w-full border px-3 py-2 rounded bg-white"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="block mb-1 font-medium">Impressora Designada</Label>
+              <select
+                name="impressora"
+                value={formData.impressora}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+              >
+                {impressoras.map((imp) => (
+                  <option key={imp} value={imp}>{imp}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label className="block mb-1 font-medium">Quantidade</Label>
+              <Input
+                type="number"
+                name="quantidade"
+                min={1}
+                value={formData.quantidade}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            </div>
+
+            <div className="col-span-1 md:col-span-2 mt-4 flex flex-col gap-4 md:flex-row md:justify-center md:gap-6">
+              <Button
+                type="submit"
+                className="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 transition w-full md:w-auto"
+              >
+                Cadastrar
+              </Button>
+
+              <Button
+                type="button"
+                onClick={() => navigate("/register-option")}
+                className="bg-gradient-to-r from-red-400 to-red-900 text-white rounded px-6 py-3 hover:bg-red-700 transition w-full md:w-auto"
+              >
+                Voltar
+              </Button>
+            </div>
+          </form>
         </div>
-
-        <div>
-          <label className="block mb-1 font-medium">
-            SKU (Clique para escolher existente)
-          </label>
-          <input
-            type="text"
-            name="sku"
-            value={formData.sku}
-            readOnly
-            onClick={abrirModal}
-            placeholder="Clique para escolher"
-            className="w-full border px-3 py-2 rounded cursor-pointer bg-gray-50"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">Impressora Designada</label>
-          <select
-            name="impressora"
-            value={formData.impressora}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          >
-            {impressoras.map((imp) => (
-              <option key={imp} value={imp}>
-                {imp}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">Quantidade</label>
-          <input
-            type="number"
-            name="quantidade"
-            min={1}
-            value={formData.quantidade}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
-          Salvar Toner
-        </button>
-      </form>
-
-      {/* Modal */}
-      {modalAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-auto">
-            <h3 className="text-xl font-semibold mb-4">Toners Cadastrados</h3>
-            {loading ? (
-              <p>Carregando...</p>
-            ) : tonersCadastrados.length === 0 ? (
-              <p>Nenhum toner cadastrado ainda.</p>
-            ) : (
-              <table className="w-full border-collapse border">
-                <thead>
-                  <tr>
-                    <th className="border px-2 py-1">Cor</th>
-                    <th className="border px-2 py-1">SKU</th>
-                    <th className="border px-2 py-1">Impressora</th>
-                    <th className="border px-2 py-1">Quantidade</th>
-                    <th className="border px-2 py-1">Selecionar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tonersCadastrados.map((t) => (
-                    <tr key={t.id}>
-                      <td className="border px-2 py-1">{t.cor}</td>
-                      <td className="border px-2 py-1">{t.sku}</td>
-                      <td className="border px-2 py-1">{t.impressora}</td>
-                      <td className="border px-2 py-1">{t.quantidade}</td>
-                      <td className="border px-2 py-1 text-center">
-                        <button
-                          onClick={() => selecionarToner(t)}
-                          className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
-                        >
-                          Selecionar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <button
-              onClick={() => setModalAberto(false)}
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

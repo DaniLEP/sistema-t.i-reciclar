@@ -46,7 +46,7 @@ export default function Login() {
         </form>
         <button onClick={loginGoogle}
           className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2 rounded shadow hover:bg-gray-100"><img src="../iconGoogle.png" alt="Google" className="w-5 h-5" /><span>Entrar com Google</span></button>        
-        <button onClick={redefinirSenha} className="w-full mt-2 text-sm text-blue-600 hover:underline">Esqueci minha senha</button>
+        <button onClick={redefinirSenha} className="w-full mt-2 text-sm text-blue-600 hover:underline">Esqueci a senha?</button>
       </div>
     </div>
   );

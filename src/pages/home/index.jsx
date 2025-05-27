@@ -8,7 +8,7 @@ export default function Home() {
 
   const cards = [
     {
-      title: "Cadastro",
+      title: "Cadastro", 
       icon: <FilePlus2 className="w-10 h-10 text-blue-700" />,
       onClick: () => navigate("/register-option"),
     },
@@ -30,11 +30,8 @@ export default function Home() {
       <main className="flex-1 p-6 bg-gray-50">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card, idx) => (
-            <div
-              key={idx}
-              onClick={card.onClick}
-              className="cursor-pointer bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
-            >
+            <div key={idx} onClick={card.onClick}
+              className="cursor-pointer bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
               <div className="flex flex-col items-center justify-center gap-2">
                 {card.icon}
                 <h2 className="text-lg font-semibold">{card.title}</h2>
