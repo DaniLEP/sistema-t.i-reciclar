@@ -1,7 +1,7 @@
 import Header from "../../components/ui/header/index";
 import Footer from "../../components/ui/footer/index";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, FolderKanban, FilePlus2 } from "lucide-react";
+import { ClipboardList, FolderKanban, FilePlus2, ViewIcon } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -11,6 +11,11 @@ export default function Home() {
       title: "Cadastro", 
       icon: <FilePlus2 className="w-10 h-10 text-blue-700" />,
       onClick: () => navigate("/register-option"),
+    },
+    {
+      title: "Consulta",
+      icon: <ViewIcon className="w-10 h-10 text-red-700" />,
+      onClick: () => navigate("/views"),
     },
     {
       title: "Dashboard",

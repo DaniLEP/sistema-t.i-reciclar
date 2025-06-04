@@ -13,6 +13,9 @@ import PrivateRoutes from './routes/PrivateRoutes';
 import CadastroImpressora from './pages/register/impressora';
 import CadastroTablet from './pages/register/tablet';
 import CadastroNotebook from './pages/register/notebook/index.jsx';
+import VisualizarNotebooks from './pages/views/notebooks';
+import HomeViews from './pages/views';
+import VisualizacaoTablet from './pages/views/tablets';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +49,18 @@ const router = createBrowserRouter([
           {
             path: '/register-tablet',
             element: <CadastroTablet />
+          },
+          {
+            path: '/views-notebooks',
+            element: <VisualizarNotebooks />
+          },
+          {
+            path: '/views',
+            element: <HomeViews />
+          },
+          {
+            path: '/views-tablet',
+            element: <VisualizacaoTablet />
           },
         ]
       }

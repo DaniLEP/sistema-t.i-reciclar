@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "../../../components/ui/input/input";
 import { Button } from "../../../components/ui/button/button";
-import { database } from "../../../../firebase";
+import { db } from "../../../../firebase";
 import { ref, push, get, update } from "firebase/database";
 import { Label } from "../../../components/ui/label/label";
 import { useNavigate } from "react-router-dom";
@@ -58,7 +58,7 @@ export default function CadastroToner() {
     }
 
     try {
-      const snapshot = await get(ref(database, "toners"));
+      const snapshot = await get(ref(db, "toners"));
       const dados = snapshot.val() || {};
 
       const tonerExistenteEntry = Object.entries(dados).find(
@@ -68,10 +68,10 @@ export default function CadastroToner() {
       if (tonerExistenteEntry) {
         const [id, tonerExistente] = tonerExistenteEntry;
         const novaQuantidade = (tonerExistente.quantidade || 0) + quantidade;
-        await update(ref(database, "toners/" + id), { quantidade: novaQuantidade });
+        await update(ref(db, "toners/" + id), { quantidade: novaQuantidade });
         setNotif({ message: `Quantidade atualizada para ${novaQuantidade}`, tipo: "success" });
       } else {
-        await push(ref(database, "toners"), { cor, sku, impressora, quantidade });
+        await push(ref(db, "toners"), { cor, sku, impressora, quantidade });
         setNotif({ message: "Toner cadastrado com sucesso!", tipo: "success" });
       }
 

@@ -3,47 +3,47 @@ import { Link } from "react-router-dom";
 const opcoesCadastro = [
   {
     id: "toner",
-    titulo: "Cadastro de Toner",
+    titulo: "Consulta de Toner",
     descricao: "Gerencie cores, SKUs e impressoras para toners.",
     emoji: "🎨",
     rota: "/register-toner",
   },
   {
     id: "impressora",
-    titulo: "Cadastro de Impressora",
+    titulo: "Consulta de Impressora",
     descricao: "Adicione e gerencie impressoras designadas.",
     emoji: "🖨️",
     rota: "/register-impressora",
   },
   {
     id: "tablet",
-    titulo: "Cadastro de Tablet",
+    titulo: "Consulta de Tablet",
     descricao: "Controle seus tablets disponíveis e suas especificações.",
     emoji: "📱",
-    rota: "/register-tablet",
+    rota: "/views-tablet",
   },
     {
     id: "notebook",
-    titulo: "Cadastro de Notebook",
+    titulo: "Consulta de Notebook",
     descricao: "Controle seus Notebooks disponíveis e suas especificações.",
     emoji: "💻",
-    rota: "/register-notebook",
+    rota: "/views-notebooks",
   },
   {
     id: "outro",
-    titulo: "Outro Cadastro",
-    descricao: "Adicione novos tipos de cadastro conforme necessidade.",
+    titulo: "Voltar para Home",
+    descricao: "Volte para a pagina anterior.",
     emoji: "↩️",
     rota: "/",
   },
 ];
 
-export default function HomeRegister() {
+export default function HomeViews() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 p-6">
-      <header className="max-w-5xl mx-auto mb-10 text-center">
-        <h1 className="text-6xl font-bold text-white">Sistema de Cadastros</h1>
-        <p className="text-white mt-2">Escolha uma opção abaixo para iniciar o cadastro.</p>
+      <header className="max-w-6xl mx-auto mb-10 text-center">
+        <h1 className="text-6xl font-bold text-white">Sistema de Consulta</h1>
+        <p className="text-white mt-2"> Escolha uma opção abaixo que deseja visualizar.</p>
       </header>
 
       <main className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">

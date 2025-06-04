@@ -1,3 +1,5 @@
+
+
 import { useState } from "react";
 import { getDatabase, ref, push } from "firebase/database";
 import { app } from "../../../../firebase";
@@ -11,6 +13,8 @@ export default function CadastroNotebook() {
     patrimonio: "",
     marca: "",
     modelo: "",
+    projeto: "",
+    local: "",
     numeroSerie: "",
     notaFiscal: "",
     obs: "",
@@ -48,6 +52,8 @@ export default function CadastroNotebook() {
         patrimonio: "",
         marca: "",
         modelo: "",
+        projeto: "",
+        local: "",
         numeroSerie: "",
         notaFiscal: "",
         obs: "",
@@ -76,6 +82,7 @@ export default function CadastroNotebook() {
             { label: "Patrimônio", name: "patrimonio" },
             { label: "Marca", name: "marca" },
             { label: "Modelo", name: "modelo" },
+            { label: "Local", name: "local" },
             { label: "Número de Série", name: "numeroSerie" },
             { label: "Nota Fiscal", name: "notaFiscal" },
             { label: "Observações", name: "obs", required: false },
@@ -92,6 +99,23 @@ export default function CadastroNotebook() {
               />
             </div>
           ))}
+
+          {/* Campo Projeto como Select */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Projeto</label>
+            <select
+              name="projeto"
+              value={form.projeto}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+            >
+              <option value="" disabled>Selecione o projeto</option>
+              <option value="FUMCAD">FUMCAD</option>
+              <option value="CONDECA">CONDECA</option>
+              <option value="INSTITUTO RECICLAR">INSTITUTO RECICLAR</option>
+            </select>
+          </div>
 
           <div>
             <label className="block text-gray-700 font-medium mb-1">Foto do Notebook</label>
