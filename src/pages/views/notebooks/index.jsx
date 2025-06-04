@@ -273,7 +273,7 @@ export default function VisualizarNotebooks() {
               </motion.div>
             </motion.div>
           )}
-          <motion.button onClick={() => navigate(-1)} whileHover={{scale: 1.1, backgroundColor: "#4f46e5", color: "white"}} whileTap={{ scale: 0.95 }}   aria-label="Voltar"title="Voltar"
+          <motion.button onClick={() => navigate("/views")} whileHover={{scale: 1.1, backgroundColor: "#4f46e5", color: "white"}} whileTap={{ scale: 0.95 }}   aria-label="Voltar"title="Voltar"
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 font-semibold shadow-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 bg-white hover:bg-indigo-600 hover:text-white select-none mt-10">
             <ArrowLeft size={20} />Voltar</motion.button>{" "}
         </AnimatePresence>

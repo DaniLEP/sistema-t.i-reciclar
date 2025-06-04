@@ -16,6 +16,8 @@ import CadastroNotebook from './pages/register/notebook/index.jsx';
 import VisualizarNotebooks from './pages/views/notebooks';
 import HomeViews from './pages/views';
 import VisualizacaoTablet from './pages/views/tablets';
+import ConsultaToners from './pages/views/toners';
+import VisualizacaoImpressoras from './pages/views/impressora';
 
 const router = createBrowserRouter([
   {
@@ -61,6 +63,14 @@ const router = createBrowserRouter([
           {
             path: '/views-tablet',
             element: <VisualizacaoTablet />
+          },
+          {
+            path: '/views-toners',
+            element: <ConsultaToners />
+          },
+          {
+            path: '/views-impressora',
+            element: <VisualizacaoImpressoras />
           },
         ]
       }

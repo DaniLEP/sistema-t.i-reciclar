@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "../../../components/ui/input/input";
 import { Button } from "../../../components/ui/button/button";
@@ -5,6 +6,8 @@ import { db } from "../../../../firebase";
 import { ref, push, get, update } from "firebase/database";
 import { Label } from "../../../components/ui/label/label";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Printer, Save, ArrowLeft } from "lucide-react";
 
 const cores = ["Preto", "Ciano", "Magenta", "Amarelo"];
 const impressoras = ["HP", "BROTHER"];
@@ -21,11 +24,14 @@ function Notification({ message, tipo = "info", onClose }) {
   setTimeout(onClose, 3000);
 
   return (
-    <div
-      className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded shadow-lg text-white font-semibold ${bgColors[tipo]} z-50`}
+    <motion.div
+      initial={{ opacity: 0, y: -30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30 }}
+      className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-md shadow-xl text-white font-medium ${bgColors[tipo]} z-50`}
     >
       {message}
-    </div>
+    </motion.div>
   );
 }
 
@@ -90,20 +96,30 @@ export default function CadastroToner() {
         onClose={() => setNotif({ message: "", tipo: "info" })}
       />
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-gray-900 p-6">
-        <div className="bg-white p-9 rounded-lg shadow-lg w-full max-w-6xl">
-          <h2 className="text-center text-4xl font-bold text-gray-700 mb-6">
-            Cadastro de Toner de Impressora
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-gray-900 p-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <motion.div
+          className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-4xl"
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 text-center mb-10 flex items-center justify-center gap-3">
+            <Printer className="text-indigo-600 w-8 h-8" />
+            Cadastro de Toner
           </h2>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="block mb-1 font-medium">Cor</Label>
+              <Label className="block text-gray-700 mb-2">Cor</Label>
               <select
                 name="cor"
                 value={formData.cor}
                 onChange={handleChange}
-                className="w-full p-2 border rounded-lg"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               >
                 {cores.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -112,25 +128,24 @@ export default function CadastroToner() {
             </div>
 
             <div>
-              <Label className="block mb-1 font-medium">SKU</Label>
+              <Label className="block text-gray-700 mb-2">SKU</Label>
               <Input
                 type="text"
                 name="sku"
                 value={formData.sku}
                 onChange={handleChange}
                 placeholder="Digite o SKU"
-                className="w-full border px-3 py-2 rounded bg-white"
-                required
+                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
 
             <div>
-              <Label className="block mb-1 font-medium">Impressora Designada</Label>
+              <Label className="block text-gray-700 mb-2">Impressora</Label>
               <select
                 name="impressora"
                 value={formData.impressora}
                 onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               >
                 {impressoras.map((imp) => (
                   <option key={imp} value={imp}>{imp}</option>
@@ -139,37 +154,37 @@ export default function CadastroToner() {
             </div>
 
             <div>
-              <Label className="block mb-1 font-medium">Quantidade</Label>
+              <Label className="block text-gray-700 mb-2">Quantidade</Label>
               <Input
                 type="number"
                 name="quantidade"
                 min={1}
                 value={formData.quantidade}
                 onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-                required
+                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
 
-            <div className="col-span-1 md:col-span-2 mt-4 flex flex-col gap-4 md:flex-row md:justify-center md:gap-6">
+            <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
               <Button
                 type="submit"
-                className="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 transition w-full md:w-auto"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 shadow-md transition flex items-center gap-2 w-full md:w-auto"
               >
+                <Save className="w-5 h-5" />
                 Cadastrar
               </Button>
-
               <Button
                 type="button"
                 onClick={() => navigate("/register-option")}
-                className="bg-gradient-to-r from-red-400 to-red-900 text-white rounded px-6 py-3 hover:bg-red-700 transition w-full md:w-auto"
+                className="bg-gradient-to-r from-red-500 to-red-800 hover:from-red-600 hover:to-red-900 text-white rounded-xl px-6 py-3 shadow-md transition flex items-center gap-2 w-full md:w-auto"
               >
+                <ArrowLeft className="w-5 h-5" />
                 Voltar
               </Button>
             </div>
           </form>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </>
   );
 }

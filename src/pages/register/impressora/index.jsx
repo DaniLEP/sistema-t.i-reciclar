@@ -2,8 +2,9 @@ import { useState } from "react";
 import { getDatabase, ref, push } from "firebase/database";
 import { app } from "../../../../firebase";
 import { motion } from "framer-motion";
-import { Printer, Save, ArrowLeft } from "lucide-react"; // <-- Corrigido aqui
+import { Printer, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input/input";
 
 export default function CadastroImpressora() {
   const [form, setForm] = useState({
@@ -12,29 +13,49 @@ export default function CadastroImpressora() {
     modelo: "",
     tipoCor: "",
     notaFiscal: "",
+    local: "",
+    fotoBase64: "",
   });
+  const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
+
+  const db = getDatabase(app);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm((prev) => ({ ...prev, fotoBase64: reader.result }));
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file); // Converte a imagem para base64 (data URL)
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const db = getDatabase(app);
-    const impressoraRef = ref(db, "impressoras");
-
     try {
+      const impressoraRef = ref(db, "impressoras");
       await push(impressoraRef, form);
+
       alert("Impressora cadastrada com sucesso!");
+
       setForm({
         patrimonio: "",
         marca: "",
         modelo: "",
         tipoCor: "",
         notaFiscal: "",
+        local: "",
+        fotoBase64: "",
       });
+      setPreview(null);
     } catch (error) {
       alert("Erro ao cadastrar: " + error.message);
     }
@@ -62,6 +83,7 @@ export default function CadastroImpressora() {
             { label: "Modelo", name: "modelo" },
             { label: "Especificação de Cor", name: "tipoCor" },
             { label: "Nota Fiscal", name: "notaFiscal" },
+            { label: "Local", name: "local" },
           ].map((field) => (
             <div key={field.name}>
               <label className="block text-gray-700 font-medium mb-1">
@@ -77,6 +99,25 @@ export default function CadastroImpressora() {
               />
             </div>
           ))}
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Foto da Impressora
+            </label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full"
+            />
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="mt-2 max-h-48 rounded-md object-contain border border-gray-300"
+              />
+            )}
+          </div>
 
           <motion.button
             whileTap={{ scale: 0.97 }}

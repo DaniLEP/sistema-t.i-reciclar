@@ -6,14 +6,14 @@ const opcoesCadastro = [
     titulo: "Consulta de Toner",
     descricao: "Gerencie cores, SKUs e impressoras para toners.",
     emoji: "🎨",
-    rota: "/register-toner",
+    rota: "/views-toners",
   },
   {
     id: "impressora",
     titulo: "Consulta de Impressora",
-    descricao: "Adicione e gerencie impressoras designadas.",
+    descricao: "Gerencie impressoras designadas.",
     emoji: "🖨️",
-    rota: "/register-impressora",
+    rota: "/views-impressora",
   },
   {
     id: "tablet",
