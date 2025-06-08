@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { auth, provider as firebaseProvider, db } from '../../../firebase'; // Ajuste aqui para seu export do db
-import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail, GoogleAuthProvider } from 'firebase/auth';
-import { ref, get } from 'firebase/database'; // Para Realtime Database
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Supondo que use react-toastify, ajuste se for outro toast
-import { UserType } from '../../routes/userType/index'; // Ajuste o caminho conforme seu projeto
+import { auth, provider } from '../../../firebase';
+import { signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,38 +19,12 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const googleProvider = new GoogleAuthProvider();
+  const loginGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // Verifica se o domínio do e-mail é "@reciclar.org.br"
-      const userEmail = user.email || '';
-      if (!userEmail.endsWith('@reciclar.org.br')) {
-        toast.error('Apenas contas @reciclar.org.br são permitidas.');
-        return;
-      }
-
-      const userRef = ref(db, 'usuarios/' + user.uid);
-      const snapshot = await get(userRef);
-
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        const funcao = userData.funcao;
-        if (!funcao || !Object.values(UserType).includes(funcao)) {
-          toast.error('Função de usuário inválida.');
-          return;
-        }
-        // Redirecionamento conforme função
-        navigate('/');
-        toast.success('Login com Google bem-sucedido!');
-      } else {
-        toast.error('Usuário não encontrado no sistema.');
-      }
-    } catch (error) {
-      console.error('Erro ao entrar com Google:', error);
-      toast.error('Erro ao entrar com Google.');
+      await signInWithPopup(auth, provider);
+      navigate('/');
+    } catch (err) {
+      setErro('Erro ao autenticar com o Google');
     }
   };
 
@@ -72,7 +43,9 @@ export default function Login() {
       <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-sm text-center">
         <img src="/Reciclar_LOGO.png" alt="Logo" className="w-24 mx-auto mb-6" />
         <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar</h2>
+
         {erro && <p className="text-red-500 text-sm mb-2">{erro}</p>}
+
         <form onSubmit={loginEmailSenha} className="space-y-4">
           <input
             type="email"
@@ -95,15 +68,20 @@ export default function Login() {
             Acessar Plataforma
           </button>
         </form>
+
         <button
-          onClick={handleGoogleLogin}
+          onClick={loginGoogle}
           className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 py-2 rounded shadow hover:bg-gray-100"
         >
           <img src="../iconGoogle.png" alt="Google" className="w-5 h-5" />
           <span>Entrar com Google</span>
         </button>
-        <button onClick={redefinirSenha} className="w-full mt-2 text-sm text-blue-600 hover:underline">
-          Esqueci a senha?
+
+        <button
+          onClick={redefinirSenha}
+          className="w-full mt-2 text-sm text-blue-600 hover:underline"
+        >
+          Esqueci minha senha
         </button>
       </div>
     </div>

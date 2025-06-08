@@ -17,5 +17,5 @@ export default function PrivateRoutes() {
 
   if (loading) return <div className="p-4">Carregando...</div>;
 
-  return userLogged ? <Outlet /> : <Navigate to="/login" />;
+  return userLogged ? <Outlet /> : <Navigate to="/Home" />;
 }
