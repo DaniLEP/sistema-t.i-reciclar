@@ -85,7 +85,7 @@ export default function VisualizarTablets() {
                   <div>
                     <p><strong>Patrimônio:</strong> {tablet.patrimonio}</p>
                     <p><strong>Marca:</strong> {tablet.marca}</p>
-                    <p><strong>Local:</strong> {tablet.modelo}</p>
+                    <p><strong>Local:</strong> {tablet.local}</p>
                     <p><strong>Modelo:</strong> {tablet.modelo}</p>
                     <p><strong>Status:</strong>{" "}
                       <span className={`font-semibold ${tablet.status === "Disponível" ? "text-green-600" : tablet.status === "Quebrado" ? "text-red-600" : "text-yellow-600" }`}>{tablet.status}</span>
