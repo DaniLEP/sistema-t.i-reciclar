@@ -9,9 +9,8 @@ const STATUS_OPTIONS = [
   { value: "Disponível", label: "Disponível" },
   { value: "Emprestado", label: "Emprestado" },
   { value: "Quebrado", label: "Quebrado" },
-  { value: "Manutencao", label: "Manutencao" },
-  { value: "naoncontrado", label: "Não Encontrado" },
-
+  { value: "Manutencao", label: "Manutenção" },
+  { value: "naoEncontrado", label: "Não Encontrado" },
 ];
 
 export default function VisualizarNotebooks() {
@@ -67,7 +66,7 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
-    if (novo === "Emprestado" || novo === "Quebrado" || novo === "Manutencao") {
+    if (["Emprestado", "Quebrado", "Manutencao"].includes(novo)) {
       setStatusNovo(novo);
       setModalMotivo(true);
     } else {
@@ -107,7 +106,13 @@ export default function VisualizarNotebooks() {
   }, [filtro, filtroStatus, notebooks]);
 
   const contagem = useMemo(() => {
-    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0 };
+    const cnt = {
+      Disponível: 0,
+      Emprestado: 0,
+      Quebrado: 0,
+      Manutencao: 0,
+      naoEncontrado: 0,
+    };
     notebooks.forEach((n) => {
       if (cnt[n.status] >= 0) cnt[n.status]++;
     });
@@ -157,21 +162,11 @@ export default function VisualizarNotebooks() {
         </div>
 
         <div className="flex gap-2 mb-4">
-          <div className="bg-green-100 p-2 rounded flex-1 text-center">
-            Disponível: {contagem.Disponível}
-          </div>
-          <div className="bg-yellow-100 p-2 rounded flex-1 text-center">
-            Emprestado: {contagem.Emprestado}
-          </div>
-          <div className="bg-red-100 p-2 rounded flex-1 text-center">
-            Quebrado: {contagem.Quebrado}
-          </div>
-          <div className="bg-blue-200 p-2 rounded flex-1 text-center">
-            Em Manunteção: {contagem.Manutencao}
-          </div>
-          <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">
-            Não Encontrado: {contagem.naoEncontrado}
-          </div>
+          <div className="bg-green-100 p-2 rounded flex-1 text-center">Disponível: {contagem.Disponível}</div>
+          <div className="bg-yellow-100 p-2 rounded flex-1 text-center">Emprestado: {contagem.Emprestado}</div>
+          <div className="bg-red-100 p-2 rounded flex-1 text-center">Quebrado: {contagem.Quebrado}</div>
+          <div className="bg-blue-200 p-2 rounded flex-1 text-center">Em Manutenção: {contagem.Manutencao}</div>
+          <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">Não Encontrado: {contagem.naoEncontrado}</div>
         </div>
 
         {notebooksFiltrados.length === 0 ? (
@@ -189,18 +184,11 @@ export default function VisualizarNotebooks() {
               </tr>
             </thead>
             <tbody>
-              {notebooksFiltrados.slice(0, 10).map((n) => (
-                <tr
-                  key={n.id}
-                  className="hover:bg-gray-50 border-b"
-                >
+              {notebooksFiltrados.map((n) => (
+                <tr key={n.id} className="hover:bg-gray-50 border-b">
                   <td className="p-2 text-center">
                     {n.fotoBase64 ? (
-                      <img
-                        src={n.fotoBase64}
-                        className="h-16 mx-auto object-contain"
-                        alt={n.modelo}
-                      />
+                      <img src={n.fotoBase64} className="h-16 mx-auto object-contain" alt={n.modelo} />
                     ) : (
                       "–"
                     )}
@@ -246,70 +234,38 @@ export default function VisualizarNotebooks() {
               onClick={fecharModal}
             >
               <motion.div
-                className="bg-white p-6 max-w-lg w-full rounded-xl shadow-lg"
+                className="bg-white p-6 max-w-lg w-full rounded-xl shadow-lg relative"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.8 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  onClick={fecharModal}
-                  className="absolute top-4 right-4 text-gray-600 hover:text-red-600"
-                >
+                <button onClick={fecharModal} className="absolute top-4 right-4 text-gray-600 hover:text-red-600">
                   <X size={24} />
                 </button>
-                <h3 className="text-2xl font-bold mb-4">{`${selecionado.marca} • ${selecionado.modelo}`}</h3>
-
-                <div className="flex gap-4 mb-4">
-                  <div className="w-32 h-24 bg-gray-100 flex items-center justify-center rounded">
-                    {selecionado.fotoBase64 ? (
-                      <img
-                        src={selecionado.fotoBase64}
-                        className="object-contain h-full"
-                        alt={selecionado.modelo}
-                      />
-                    ) : (
-                      <span className="text-gray-400 italic">Sem foto</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p><strong>Patrimônio:</strong> {selecionado.patrimonio || "–"}</p>
-                    <p><strong>Data Cadastro:</strong> {selecionado.dataCadastro || "–"}</p>
-                    {/* Adicione mais campos conforme necessário */}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="font-semibold">Status:</label>
-                  <select
-                    value={selecionado.status}
-                    onChange={(e) => alterarStatus(e.target.value)}
-                    className="ml-2 border rounded px-3 py-1"
-                  >
-                    {STATUS_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {["Emprestado", "Quebrado", "Manutencao"].includes(selecionado.status) && (
-                  <p><strong>Motivo:</strong> {selecionado.motivo || "–"}</p>
-                )}
-
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={fecharModal}
-                    className="bg-indigo-600 px-6 py-2 text-white rounded hover:bg-indigo-700"
-                  >
-                    Fechar
-                  </button>
+                <h3 className="text-xl font-semibold mb-4">Detalhes do Notebook</h3>
+                <p><strong>Patrimônio:</strong> {selecionado.patrimonio}</p>
+                <p><strong>Marca:</strong> {selecionado.marca}</p>
+                <p><strong>Modelo:</strong> {selecionado.modelo}</p>
+                <p><strong>Status Atual:</strong> {selecionado.status}</p>
+                {selecionado.motivo && <p><strong>Motivo:</strong> {selecionado.motivo}</p>}
+                <div className="mt-4 space-x-2">
+                  {STATUS_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => alterarStatus(opt.value)}
+                      className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
               </motion.div>
             </motion.div>
           )}
+        </AnimatePresence>
 
+        <AnimatePresence>
           {modalMotivo && (
             <motion.div
               className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
@@ -325,31 +281,17 @@ export default function VisualizarNotebooks() {
                 exit={{ scale: 0.8 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  onClick={fecharMotivo}
-                  className="absolute top-4 right-4 text-gray-600 hover:text-red-600"
-                >
-                  <X size={24} />
-                </button>
-                <h3 className="text-xl font-semibold mb-4">
-                  Informe o motivo de: {statusNovo}
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Motivo da alteração</h3>
                 <textarea
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
+                  className="w-full border rounded p-2 mb-4"
                   rows={4}
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Motivo..."
+                  placeholder="Descreva o motivo..."
                 />
-                <div className="mt-4 flex justify-end gap-2">
-                  <button onClick={fecharMotivo} className="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
-                  <button
-                    onClick={salvarMotivo}
-                    disabled={!motivo.trim()}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded disabled:opacity-50"
-                  >
-                    Salvar
-                  </button>
+                <div className="flex justify-end gap-2">
+                  <button onClick={fecharMotivo} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancelar</button>
+                  <button onClick={salvarMotivo} className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">Salvar</button>
                 </div>
               </motion.div>
             </motion.div>

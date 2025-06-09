@@ -65,7 +65,7 @@ export default function VisualizarCamera() {
       setMotivoReadonly(!!modalTablet.motivo);
       setModalMotivoOpen(true);
     } else {
-      updateTabletData(modalTablet.id, "Disponível", "");
+      updateTabletData(modalTablet.id, modalTablet.status, "");
     }
   };
 
@@ -92,7 +92,7 @@ export default function VisualizarCamera() {
           <h2 className="text-3xl font-bold text-gray-800">Câmeras Cadastradas</h2>
         </div>
 
-        <div className="flex gap-6 mb-8 text-gray-700 font-semibold">
+        <div className="flex gap-6 mb-8 text-gray-700 font-semibold flex-wrap">
           {STATUS_OPTIONS.map((status) => (
             <div key={status} className="px-4 py-2 bg-indigo-100 rounded-lg">
               {status}: <span className="text-indigo-700">{statusCount[status]}</span>
@@ -106,14 +106,14 @@ export default function VisualizarCamera() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {tablets.map((tablet) => (
               <div key={tablet.id} className="border border-gray-300 rounded-lg p-4 shadow-sm flex gap-4">
-                <div className="flex-shrink-0 w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="w-32 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                   {tablet.fotoBase64 ? (
                     <img src={tablet.fotoBase64} alt={`Foto do tablet ${tablet.patrimonio}`} className="object-cover w-full h-full" />
                   ) : (
                     <TabletSmartphone className="w-12 h-12 text-gray-400" />
                   )}
                 </div>
-                <div className="flex flex-col justify-between flex-grow">
+                <div className="flex-grow flex flex-col justify-between">
                   <div>
                     <p><strong>Patrimônio:</strong> {tablet.patrimonio}</p>
                     <p><strong>Marca:</strong> {tablet.marca}</p>
@@ -153,12 +153,12 @@ export default function VisualizarCamera() {
           onClick={() => setModalTablet(null)}>
           <motion.div className="bg-white rounded-lg max-w-lg w-full p-6 relative"
             initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} onClick={(e) => e.stopPropagation()}>
-            <button className="absolute top-3 right-3 text-gray-600 hover:text-gray-900" onClick={() => setModalTablet(null)} aria-label="Fechar">
+            <button className="absolute top-3 right-3 text-gray-600 hover:text-gray-900" onClick={() => setModalTablet(null)}>
               <X className="w-6 h-6" />
             </button>
             <h3 className="text-2xl font-bold mb-4">Detalhes da Câmera</h3>
             <div className="mb-4 flex gap-4">
-              <div className="flex-shrink-0 w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="w-32 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                 {modalTablet.fotoBase64 ? (
                   <img src={modalTablet.fotoBase64} alt={`Foto do tablet ${modalTablet.patrimonio}`} className="object-cover w-full h-full" />
                 ) : (
@@ -204,15 +204,22 @@ export default function VisualizarCamera() {
         <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={() => setModalMotivoOpen(false)}>
-          <motion.div className="bg-white rounded-lg max-w-md w-full p-6 relative"
+          <motion.div className="bg-white rounded-lg max-w-md w-full p-6"
             initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-semibold mb-4">Informe o motivo ou responsável</h3>
-            <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} readOnly={motivoReadonly}
-              className="w-full h-28 border border-gray-300 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            <button onClick={handleSalvarMotivo}
-              className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
-              Salvar
-            </button>
+            <h4 className="text-xl font-bold mb-4">Informe o motivo ou responsável</h4>
+            <textarea
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              readOnly={motivoReadonly}
+              rows={4}
+            />
+            {!motivoReadonly && (
+              <button onClick={handleSalvarMotivo}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
+                Salvar Motivo
+              </button>
+            )}
           </motion.div>
         </motion.div>
       )}

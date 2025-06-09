@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, update } from "firebase/database"; // <-- adicionado update
 import { app } from "../../../../firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Printer, X, ArrowLeft } from "lucide-react";
@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([]);
   const [selecionada, setSelecionada] = useState(null);
+  const [showMotivoModal, setShowMotivoModal] = useState(false);
+  const [novoStatus, setNovoStatus] = useState("");
+  const [motivo, setMotivo] = useState("");
 
   const navigate = useNavigate();
 
@@ -29,66 +32,87 @@ export default function VisualizacaoImpressoras() {
     });
   }, []);
 
-  const closeModal = () => setSelecionada(null);
+  const closeModal = () => {
+    setSelecionada(null);
+    setShowMotivoModal(false);
+    setMotivo("");
+    setNovoStatus("");
+  };
+
+  const handleStatusChange = (e) => {
+    const valor = e.target.value;
+    setNovoStatus(valor);
+    if (valor === "Quebrado" || valor === "Em manutenção") {
+      setShowMotivoModal(true);
+    } else {
+      salvarStatus(valor, "");
+    }
+  };
+
+  const salvarStatus = (status, motivoTexto) => {
+    if (!selecionada) return;
+
+    const db = getDatabase(app);
+    const impressoraRef = ref(db, `impressoras/${selecionada.id}`);
+
+    update(impressoraRef, {
+      status,
+      motivo: motivoTexto || "",
+    }).then(() => {
+      setSelecionada((prev) => ({
+        ...prev,
+        status,
+        motivo: motivoTexto || "",
+      }));
+      setShowMotivoModal(false);
+      setMotivo("");
+      setNovoStatus("");
+    });
+  };
+
   const voltarPagina = () => navigate("/views");
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 transition-colors duration-300">
       <div className="p-8 min-h-screen flex flex-col max-w-7xl mx-auto">
-        {/* Botão Voltar */}
         <button
           onClick={voltarPagina}
-          className="flex items-center gap-2 mb-8 text-indigo-300 hover:text-indigo-100 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded"
-          aria-label="Voltar para página anterior"
+          className="flex items-center gap-2 mb-8 text-indigo-300 hover:text-indigo-100 transition-colors font-semibold"
         >
           <ArrowLeft className="w-5 h-5" />
           Voltar
         </button>
 
-        <h1 className="text-4xl font-extrabold mb-12 text-center tracking-tight select-none text-white">
-          Impressoras Cadastradas
-        </h1>
+        <h1 className="text-4xl font-extrabold mb-12 text-center text-white">Impressoras Cadastradas</h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {impressoras.map((imp) => (
             <motion.div
               key={imp.id}
               whileHover={{ scale: 1.04 }}
-              whileFocus={{ scale: 1.04 }}
-              tabIndex={0}
-              className="cursor-pointer rounded-xl bg-white shadow-sm shadow-gray-300 overflow-hidden outline-none focus:ring-4 focus:ring-indigo-400 transition-transform duration-200"
               onClick={() => setSelecionada(imp)}
-              onKeyDown={(e) => e.key === "Enter" && setSelecionada(imp)}
-              role="button"
-              aria-label={`Ver detalhes da impressora ${imp.marca} modelo ${imp.modelo}`}
+              className="cursor-pointer rounded-xl bg-white shadow-sm overflow-hidden"
             >
               {imp.fotoBase64 ? (
                 <img
                   src={imp.fotoBase64}
-                  alt={`Foto da impressora ${imp.marca} modelo ${imp.modelo}`}
-                  className="w-full h-auto object-contain rounded-t-xl bg-gray-50"
-                  loading="lazy"
+                  className="w-full h-auto object-contain bg-gray-50"
                 />
               ) : (
-                <div className="w-full h-48 flex items-center justify-center rounded-t-xl select-none text-sm italic bg-gray-100 text-gray-400">
+                <div className="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400">
                   Sem imagem
                 </div>
               )}
-
-              <div className="p-5 flex flex-col">
-                <div>
-                  <h3 className="text-xl font-semibold truncate text-gray-900">{imp.marca}</h3>
-                  <p className="text-sm mt-1 truncate text-gray-700">{imp.modelo}</p>
-                </div>
-
+              <div className="p-5">
+                <h3 className="text-xl font-semibold truncate">{imp.marca}</h3>
+                <p className="text-sm truncate">{imp.modelo}</p>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="mt-4 w-full py-2 rounded-md text-sm font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-400 text-white transition-colors"
+                  className="mt-4 w-full py-2 rounded bg-indigo-600 text-white"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelecionada(imp);
                   }}
-                  aria-label={`Ver mais detalhes da impressora ${imp.marca} modelo ${imp.modelo}`}
                 >
                   Ver mais
                 </motion.button>
@@ -97,89 +121,93 @@ export default function VisualizacaoImpressoras() {
           ))}
         </div>
 
-        {/* Modal */}
+        {/* Modal Principal */}
         <AnimatePresence>
           {selecionada && (
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              aria-modal="true"
-              role="dialog"
-              aria-labelledby="modal-title"
-            >
+            <motion.div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
               <motion.div
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                onDragEnd={(e, info) => {
-                  if (info.offset.y > 120) closeModal();
-                }}
+                className="bg-white p-8 rounded-2xl w-full max-w-lg relative"
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 100, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="relative rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white text-gray-900 shadow-gray-300 focus:outline-none"
-                tabIndex={-1}
               >
-                <div className="w-full flex justify-center py-3">
-                  <div className="w-16 h-1.5 rounded-full bg-gray-300" />
-                </div>
-
-                <button
-                  onClick={closeModal}
-                  className="absolute top-4 right-4 rounded-full p-1 text-gray-600 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
-                  aria-label="Fechar detalhes da impressora"
-                >
-                  <X className="w-6 h-6" />
+                <button onClick={closeModal} className="absolute top-4 right-4">
+                  <X />
                 </button>
 
-                <div className="p-8 space-y-6">
-                  <h2
-                    id="modal-title"
-                    className="text-3xl font-extrabold flex items-center gap-3 select-none text-gray-900"
-                  >
-                    <Printer className="w-7 h-7 text-indigo-600" />
-                    {selecionada.marca} - {selecionada.modelo}
-                  </h2>
+                <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                  <Printer /> {selecionada.marca} - {selecionada.modelo}
+                </h2>
 
-                  {selecionada.fotoBase64 ? (
-                    <img
-                      src={selecionada.fotoBase64}
-                      alt={`Foto da impressora ${selecionada.marca} modelo ${selecionada.modelo}`}
-                      className="w-full h-64 object-cover rounded-xl shadow-md"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-64 flex items-center justify-center rounded-xl select-none text-sm italic bg-gray-100 text-gray-400">
-                      Sem imagem disponível
-                    </div>
+                <div className="space-y-2 text-gray-700">
+                  <p><strong>Status atual:</strong> {selecionada.status || "Funcionando"}</p>
+                  {selecionada.motivo && (
+                    <p><strong>Motivo:</strong> {selecionada.motivo}</p>
                   )}
-                  <div className="space-y-2 text-base leading-relaxed text-gray-800">
-                    <p><strong>Tipo de Cor:</strong> {selecionada.tipoCor || "N/A"}</p>
-                    <p><strong>Patrimônio:</strong> {selecionada.patrimonio}</p>
-                    <p><strong>Marca:</strong> {selecionada.marca}</p>
-                    <p><strong>Local:</strong> {selecionada.local}</p>
-                    <p><strong>Modelo:</strong> {selecionada.modelo}</p>
-                    <p><strong>Nota Fiscal:</strong> {selecionada.notaFiscal}</p>
-                    <p><strong>Projeto:</strong> {selecionada.projeto}</p>
-                    <p><strong>Data Cadastro:</strong> {selecionada.dataCadastro}</p>
-                    <p><strong>Parceiro:</strong> {selecionada.parceiro}</p>
-                    <p><strong>NCM:</strong> {selecionada.NCM}</p>
-                    <p><strong>VR-BEM:</strong> {selecionada.vrbem}</p>
-                    <p><strong>Projeto/Edital/Convênio:</strong> {selecionada.projetoEditalConvenio}</p>
-                    <p><strong>Ano:</strong> {selecionada.ano}</p>
-                  </div>
 
-                  <div className="flex justify-end">
+                  <label className="block mt-4">
+                    <span className="font-medium">Alterar Status:</span>
+                    <select
+                      className="mt-1 w-full p-2 border border-gray-300 rounded"
+                      onChange={handleStatusChange}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Selecione o novo status</option>
+                      <option value="Funcionando">Funcionando</option>
+                      <option value="Quebrado">Quebrado</option>
+                      <option value="Em manutenção">Em manutenção</option>
+                    </select>
+                  </label>
+
+                  <div className="mt-6 flex justify-end">
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={closeModal}
-                      className="px-5 py-3 rounded-md text-base font-semibold bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-white transition-colors"
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >
                       Fechar
                     </motion.button>
                   </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Modal do Motivo */}
+        <AnimatePresence>
+          {showMotivoModal && (
+            <motion.div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <motion.div
+                className="bg-white p-6 rounded-xl w-full max-w-md"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+              >
+                <h3 className="text-lg font-semibold mb-4">Informe o motivo</h3>
+                <textarea
+                  className="w-full p-2 border border-gray-300 rounded h-28"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  placeholder="Descreva o motivo do status selecionado..."
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                    onClick={() => {
+                      setShowMotivoModal(false);
+                      setNovoStatus("");
+                      setMotivo("");
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={() => salvarStatus(novoStatus, motivo)}
+                  >
+                    Salvar
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
