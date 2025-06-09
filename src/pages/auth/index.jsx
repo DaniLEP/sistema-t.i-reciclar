@@ -43,7 +43,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 to-blue-900 p-5">
       <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-sm text-center">
         <img src="/Reciclar_LOGO.png" alt="Logo" className="w-24 mx-auto mb-6" />
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar- Digital</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Instituto Reciclar - Digital</h2>
         {erro && <p className="text-red-500 text-sm mb-2">{erro}</p>}
         <form onSubmit={loginEmailSenha} className="space-y-4">
           <input type="email" placeholder="E-mail" className="w-full p-3 pr-10 rounded border border-gray-300 bg-gray-50" value={email} onChange={(e) => setEmail(e.target.value)} />
