@@ -1,41 +1,87 @@
-import { StrictMode } from 'react';
+// import { StrictMode } from 'react';
+// import { createRoot } from 'react-dom/client';
+// import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+// import './index.css';
+// import App from './App.jsx';
+// import Home from './pages/home/index.jsx';
+// import Login from './pages/auth/index.jsx';
+// import ErrorPage from './components/ui/error/index.jsx';
+// import HomeRegister from './pages/register/index.jsx';
+// import CadastroToner from "./pages/register/toner/index.jsx";
+// import PrivateRoutes from './routes/PrivateRoutes';
+// import CadastroImpressora from './pages/register/impressora';
+// import CadastroTablet from './pages/register/tablet';
+// import CadastroNotebook from './pages/register/notebook/index.jsx';
+// import VisualizarNotebooks from './pages/views/notebooks';
+// import HomeViews from './pages/views';
+// import ConsultaToners from './pages/views/toners';
+// import VisualizacaoImpressoras from './pages/views/impressora';
+
+// const router = createBrowserRouter([
+//   {
+//     path: '/',
+//     element: <PrivateRoutes />, // rotas protegidas
+//     children: [
+//       {
+//         path: '/',
+//         element: <App />, // App com Outlet + layout
+//         children: [
+//           {
+//             index: true,
+//             element: <Home />,
+//           },
+          
+
+//         ]
+//       }
+//     ],
+//     errorElement: <ErrorPage />,
+//   },
+//   {
+//     path: '/login', // rota pública
+//     element: <Login />,
+//   }
+// ]);
+
+// createRoot(document.getElementById('root')).render(
+//   <StrictMode>
+//     <RouterProvider router={router} />
+//   </StrictMode>
+// );
+
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
+import React from 'react';
 import './index.css';
 import App from './App.jsx';
-import Home from './pages/home/index.jsx';
-import Login from './pages/auth/index.jsx';
-import ErrorPage from './components/ui/error/index.jsx';
-import HomeRegister from './pages/register/index.jsx';
-import CadastroToner from "./pages/register/toner/index.jsx";
-import PrivateRoutes from './routes/PrivateRoutes';
+import Login from './pages/auth/index';
+import Home from './pages/home';
+import ErrorPage from './components/ui/error';
+import HomeRegister from './pages/register';
+import CadastroNotebook from './pages/register/notebook';
+import CadastroToner from './pages/register/toner';
 import CadastroImpressora from './pages/register/impressora';
 import CadastroTablet from './pages/register/tablet';
-import CadastroNotebook from './pages/register/notebook/index.jsx';
 import VisualizarNotebooks from './pages/views/notebooks';
 import HomeViews from './pages/views';
 import VisualizacaoTablet from './pages/views/tablets';
 import ConsultaToners from './pages/views/toners';
-import VisualizacaoImpressoras from './pages/views/impressora';
+import VisualizacaoImpressoras from './pages/views/impressora/index.jsx';
+
+
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <PrivateRoutes />, // rotas protegidas
+    element: <App />,
+    errorElement: <ErrorPage />,
     children: [
-      {
-        path: '/',
-        element: <App />, // App com Outlet + layout
-        children: [
-          {
-            index: true,
-            element: <Home />,
-          },
-          {
-            path: '/register-option',
-            element: <HomeRegister />
-          },
+      { path: '/', element: <Login /> },
+      { path: '/Home', element: <Home /> },
+      // Registers
+      { path: '/register-option', element: <HomeRegister />},
           {
             path: '/register-notebook',
             element: <CadastroNotebook />
@@ -72,19 +118,8 @@ const router = createBrowserRouter([
             path: '/views-impressora',
             element: <VisualizacaoImpressoras />
           },
-        ]
-      }
+    
     ],
-    errorElement: <ErrorPage />,
   },
-  {
-    path: '/login', // rota pública
-    element: <Login />,
-  }
 ]);
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
-);
+createRoot(document.getElementById('root')).render( <StrictMode> <RouterProvider router={router} /> </StrictMode>);
