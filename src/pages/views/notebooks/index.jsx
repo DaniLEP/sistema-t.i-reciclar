@@ -9,6 +9,9 @@ const STATUS_OPTIONS = [
   { value: "Disponível", label: "Disponível" },
   { value: "Emprestado", label: "Emprestado" },
   { value: "Quebrado", label: "Quebrado" },
+  { value: "Manutenção", label: "Manutencao" },
+  { value: "Não Encontrado", label: "naoEncontrado" },
+
 ];
 
 export default function VisualizarNotebooks() {
@@ -64,7 +67,7 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
-    if (novo === "Emprestado" || novo === "Quebrado") {
+    if (novo === "Emprestado" || novo === "Quebrado" || novo === "Manutencao") {
       setStatusNovo(novo);
       setModalMotivo(true);
     } else {

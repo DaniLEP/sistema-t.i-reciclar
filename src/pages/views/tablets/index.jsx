@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const STATUS_OPTIONS = ["Disponível", "Quebrado", "Emprestado"];
+const STATUS_OPTIONS = ["Disponível", "Quebrado", "Emprestado", "Manutenção", "Não encontrado"];
 
 export default function VisualizarTablets() {
   const [tablets, setTablets] = useState([]);
