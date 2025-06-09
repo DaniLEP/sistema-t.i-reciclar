@@ -8,13 +8,21 @@ import { Input } from "@/components/ui/input/input";
 
 export default function CadastroImpressora() {
   const [form, setForm] = useState({
-    patrimonio: "",
-    marca: "",
-    modelo: "",
-    tipoCor: "",
-    notaFiscal: "",
-    local: "",
-    fotoBase64: "",
+   patrimonio: "",
+        marca: "",
+        modelo: "",
+        tipoCor: "",
+        notaFiscal: "",
+        local: "",
+        fotoBase64: "",
+        obs: "", 
+        projeto: "", 
+        dataCadastro: "",
+        NCM: "",
+        vrbem: "",
+        parceiro: "",
+        projetoEditalConvenio: "",
+        ano: "" 
   });
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
@@ -54,6 +62,14 @@ export default function CadastroImpressora() {
         notaFiscal: "",
         local: "",
         fotoBase64: "",
+        obs: "", 
+        projeto: "", 
+        dataCadastro: "",
+        NCM: "",
+        vrbem: "",
+        parceiro: "",
+        projetoEditalConvenio: "",
+        ano: "" 
       });
       setPreview(null);
     } catch (error) {
@@ -83,6 +99,7 @@ export default function CadastroImpressora() {
             { label: "Modelo", name: "modelo" },
             { label: "Especificação de Cor", name: "tipoCor" },
             { label: "Nota Fiscal", name: "notaFiscal" },
+            { label: "Parceiro", name: "parceiro" },
             { label: "Local", name: "local" },
           ].map((field) => (
             <div key={field.name}>
@@ -99,6 +116,80 @@ export default function CadastroImpressora() {
               />
             </div>
           ))}
+
+                      {/* Data de Cadastro */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Data de Cadastro</label>
+            <input
+              type="date"
+              name="dataCadastro"
+              value={form.dataCadastro}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          {/* Ano */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Ano</label>
+            <select
+              name="ano"
+              value={form.ano}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            >
+              <option value="" disabled>Selecione o ano</option>
+              {Array.from({ length: 30 }, (_, i) => {
+                const year = 2010 + i;
+                return <option key={year} value={year}>{year}</option>;
+              })}
+            </select>
+          </div>
+
+          {/* Projeto */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Projeto</label>
+            <select
+              name="projeto"
+              value={form.projeto}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            >
+              <option value="" disabled>Selecione o projeto</option>
+              <option value="FUMCAD">FUMCAD</option>
+              <option value="CONDECA">CONDECA</option>
+              <option value="INSTITUTO RECICLAR">INSTITUTO RECICLAR</option>
+              <option value="DOACAO">DOAÇÃO</option>
+
+            </select>
+          </div>
+
+          {/* NCM */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">NCM</label>
+            <input
+              type="text"
+              name="NCM"
+              value={form.NCM}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+            <div>
+            <label className="block text-gray-700 font-medium mb-1">VR-BEM</label>
+            <input
+            type="text"
+            name="vrbem"
+            value={form.vrbem}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
 
           <div>
             <label className="block text-gray-700 font-medium mb-1">

@@ -66,7 +66,6 @@ export default function RegistroUser() {
           <select value={funcao} onChange={(e) => setFuncao(e.target.value)} required className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Selecione a função</option>
             <option value="Admin">Admin</option>
-            <option value="Cozinha">Cozinha</option>
             <option value="T.I">T.I</option>
           </select>
           {/* SENHA */}

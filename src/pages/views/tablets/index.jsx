@@ -126,6 +126,12 @@ export default function VisualizarTablets() {
                 <p><strong>Projeto:</strong> {modalTablet.projeto}</p>
                 <p><strong>Motivo:</strong> {modalTablet.motivo || "-"}</p>
                 {modalTablet.obs && <p><strong>Obs:</strong> {modalTablet.obs}</p>}
+                <p><strong>Data Cadastro:</strong> {modalTablet.dataCadastro}</p>
+                <p><strong>Parceiro:</strong> {modalTablet.parceiro}</p>
+                <p><strong>NCM:</strong> {modalTablet.NCM}</p>
+                <p><strong>VR-BEM:</strong> {modalTablet.vrbem}</p>
+                <p><strong>Projeto/Edital/Convênio:</strong> {modalTablet.projetoEditalConvenio}</p>
+                <p><strong>Ano:</strong> {modalTablet.ano}</p>
               </div>
             </div>
             <div>

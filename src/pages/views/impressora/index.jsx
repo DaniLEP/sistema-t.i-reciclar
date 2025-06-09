@@ -3,13 +3,13 @@ import { getDatabase, ref, onValue } from "firebase/database";
 import { app } from "../../../../firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Printer, X, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // <-- Importa useNavigate
+import { useNavigate } from "react-router-dom";
 
 export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([]);
   const [selecionada, setSelecionada] = useState(null);
 
-  const navigate = useNavigate(); // <-- hook para navegação
+  const navigate = useNavigate();
 
   useEffect(() => {
     const db = getDatabase(app);
@@ -30,16 +30,12 @@ export default function VisualizacaoImpressoras() {
   }, []);
 
   const closeModal = () => setSelecionada(null);
-
-  // Função para voltar página anterior
-  const voltarPagina = () => {
-    navigate("/views");
-  };
+  const voltarPagina = () => navigate("/views");
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 transition-colors duration-300">
       <div className="p-8 min-h-screen flex flex-col max-w-7xl mx-auto">
-        {/* Botão voltar */}
+        {/* Botão Voltar */}
         <button
           onClick={voltarPagina}
           className="flex items-center gap-2 mb-8 text-indigo-300 hover:text-indigo-100 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded"
@@ -87,7 +83,7 @@ export default function VisualizacaoImpressoras() {
 
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="mt-45 w-full py-2 rounded-md text-sm font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-400 text-white transition-colors"
+                  className="mt-4 w-full py-2 rounded-md text-sm font-medium bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-400 text-white transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelecionada(imp);
@@ -117,9 +113,7 @@ export default function VisualizacaoImpressoras() {
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 onDragEnd={(e, info) => {
-                  if (info.offset.y > 120) {
-                    closeModal();
-                  }
+                  if (info.offset.y > 120) closeModal();
                 }}
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -161,20 +155,20 @@ export default function VisualizacaoImpressoras() {
                       Sem imagem disponível
                     </div>
                   )}
-
                   <div className="space-y-2 text-base leading-relaxed text-gray-800">
-                    <p>
-                      <strong>Patrimônio:</strong> {selecionada.patrimonio || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Tipo de Cor:</strong> {selecionada.tipoCor || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Nota Fiscal:</strong> {selecionada.notaFiscal || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Local:</strong> {selecionada.local || "N/A"}
-                    </p>
+                    <p><strong>Tipo de Cor:</strong> {selecionada.tipoCor || "N/A"}</p>
+                    <p><strong>Patrimônio:</strong> {selecionada.patrimonio}</p>
+                    <p><strong>Marca:</strong> {selecionada.marca}</p>
+                    <p><strong>Local:</strong> {selecionada.local}</p>
+                    <p><strong>Modelo:</strong> {selecionada.modelo}</p>
+                    <p><strong>Nota Fiscal:</strong> {selecionada.notaFiscal}</p>
+                    <p><strong>Projeto:</strong> {selecionada.projeto}</p>
+                    <p><strong>Data Cadastro:</strong> {selecionada.dataCadastro}</p>
+                    <p><strong>Parceiro:</strong> {selecionada.parceiro}</p>
+                    <p><strong>NCM:</strong> {selecionada.NCM}</p>
+                    <p><strong>VR-BEM:</strong> {selecionada.vrbem}</p>
+                    <p><strong>Projeto/Edital/Convênio:</strong> {selecionada.projetoEditalConvenio}</p>
+                    <p><strong>Ano:</strong> {selecionada.ano}</p>
                   </div>
 
                   <div className="flex justify-end">

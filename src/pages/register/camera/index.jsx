@@ -7,7 +7,22 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input/input";
 
 export default function CadastroCamera() {
-  const [form, setForm] = useState({patrimonio: "", marca: "", modelo: "", responsavel: "", local: "", notaFiscal: "", obs: "", projeto: "", fotoBase64: "", status: "Disponível"  });
+  const [form, setForm] = useState({
+      patrimonio: "", 
+        marca: "", 
+        modelo: "",  
+        local: "", 
+        notaFiscal: "", 
+        obs: "", 
+        projeto: "", 
+        fotoBase64: "", 
+        status: "Disponível",
+        dataCadastro: "",
+        NCM: "",
+        vrbem: "",
+        parceiro: "",
+        projetoEditalConvenio: "",
+        ano: "" });
   const navigate = useNavigate();
   const handleChange = (e) => {setForm({ ...form, [e.target.name]: e.target.value });};
   
@@ -26,7 +41,21 @@ export default function CadastroCamera() {
     try {
       await push(tabletRef, form);
       alert("Tablet cadastrado com sucesso!");
-      setForm({patrimonio: "", marca: "", modelo: "", local: "", notaFiscal: "", obs: "", projeto: "", fotoBase64: "", status: "Disponível"});} 
+      setForm({ patrimonio: "", 
+        marca: "", 
+        modelo: "",  
+        local: "", 
+        notaFiscal: "", 
+        obs: "", 
+        projeto: "", 
+        fotoBase64: "", 
+        status: "Disponível",
+        dataCadastro: "",
+        NCM: "",
+        vrbem: "",
+        parceiro: "",
+        projetoEditalConvenio: "",
+        ano: "" });}  
       catch (error) {alert("Erro ao cadastrar: " + error.message);}
   };
 
@@ -45,9 +74,8 @@ export default function CadastroCamera() {
             { label: "Modelo", name: "modelo" },
             { label: "Local", name: "local" },
             { label: "Nota Fiscal", name: "notaFiscal" },
-            { label: "Projeto", name: "projeto" },  // novo campo projeto
+            { label: "Parceiro", name: "parceiro" },  // novo campo projeto
             { label: "Responsável", name: "responsavel" },  // novo campo projeto
-
             { label: "Obs", name: "obs" },
           ].map((field) => (
             <div key={field.name}>
@@ -56,6 +84,79 @@ export default function CadastroCamera() {
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"/>
             </div>
           ))}
+                      {/* Data de Cadastro */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Data de Cadastro</label>
+            <input
+              type="date"
+              name="dataCadastro"
+              value={form.dataCadastro}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+          {/* Ano */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Ano</label>
+            <select
+              name="ano"
+              value={form.ano}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            >
+              <option value="" disabled>Selecione o ano</option>
+              {Array.from({ length: 30 }, (_, i) => {
+                const year = 2010 + i;
+                return <option key={year} value={year}>{year}</option>;
+              })}
+            </select>
+          </div>
+
+          {/* Projeto */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Projeto</label>
+            <select
+              name="projeto"
+              value={form.projeto}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            >
+              <option value="" disabled>Selecione o projeto</option>
+              <option value="FUMCAD">FUMCAD</option>
+              <option value="CONDECA">CONDECA</option>
+              <option value="INSTITUTO RECICLAR">INSTITUTO RECICLAR</option>
+              <option value="DOACAO">DOAÇÃO</option>
+
+            </select>
+          </div>
+
+          {/* NCM */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">NCM</label>
+            <input
+              type="text"
+              name="NCM"
+              value={form.NCM}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
+            <div>
+            <label className="block text-gray-700 font-medium mb-1">VR-BEM</label>
+            <input
+            type="text"
+            name="vrbem"
+            value={form.vrbem}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+
       <div>
         <label className="block text-gray-700 font-medium mb-1">Foto da Câmera ou periférico</label>
         <Input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-sm text-gray-700 mb-3"/>
