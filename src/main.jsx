@@ -1,55 +1,3 @@
-// import { StrictMode } from 'react';
-// import { createRoot } from 'react-dom/client';
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-// import './index.css';
-// import App from './App.jsx';
-// import Home from './pages/home/index.jsx';
-// import Login from './pages/auth/index.jsx';
-// import ErrorPage from './components/ui/error/index.jsx';
-// import HomeRegister from './pages/register/index.jsx';
-// import CadastroToner from "./pages/register/toner/index.jsx";
-// import PrivateRoutes from './routes/PrivateRoutes';
-// import CadastroImpressora from './pages/register/impressora';
-// import CadastroTablet from './pages/register/tablet';
-// import CadastroNotebook from './pages/register/notebook/index.jsx';
-// import VisualizarNotebooks from './pages/views/notebooks';
-// import HomeViews from './pages/views';
-// import ConsultaToners from './pages/views/toners';
-// import VisualizacaoImpressoras from './pages/views/impressora';
-
-// const router = createBrowserRouter([
-//   {
-//     path: '/',
-//     element: <PrivateRoutes />, // rotas protegidas
-//     children: [
-//       {
-//         path: '/',
-//         element: <App />, // App com Outlet + layout
-//         children: [
-//           {
-//             index: true,
-//             element: <Home />,
-//           },
-          
-
-//         ]
-//       }
-//     ],
-//     errorElement: <ErrorPage />,
-//   },
-//   {
-//     path: '/login', // rota pública
-//     element: <Login />,
-//   }
-// ]);
-
-// createRoot(document.getElementById('root')).render(
-//   <StrictMode>
-//     <RouterProvider router={router} />
-//   </StrictMode>
-// );
-
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -69,8 +17,11 @@ import HomeViews from './pages/views';
 import VisualizacaoTablet from './pages/views/tablets';
 import ConsultaToners from './pages/views/toners';
 import VisualizacaoImpressoras from './pages/views/impressora/index.jsx';
-
-
+import RegistroUser from './pages/auth/register_auth';
+import CadastroMobiliario from './pages/register/mobiliario';
+import VisualizarMobiliario from './pages/views/mobiliario';
+import CadastroCamera from './pages/register/camera';
+import VisualizarCamera from './pages/views/camera';
 
 const router = createBrowserRouter([
   {
@@ -82,43 +33,22 @@ const router = createBrowserRouter([
       { path: '/Home', element: <Home /> },
       // Registers
       { path: '/register-option', element: <HomeRegister />},
-          {
-            path: '/register-notebook',
-            element: <CadastroNotebook />
-          },
-          {
-            path: '/register-toner',
-            element: <CadastroToner />
-          },
-          {
-            path: '/register-impressora',
-            element: <CadastroImpressora />
-          },
-          {
-            path: '/register-tablet',
-            element: <CadastroTablet />
-          },
-          {
-            path: '/views-notebooks',
-            element: <VisualizarNotebooks />
-          },
-          {
-            path: '/views',
-            element: <HomeViews />
-          },
-          {
-            path: '/views-tablet',
-            element: <VisualizacaoTablet />
-          },
-          {
-            path: '/views-toners',
-            element: <ConsultaToners />
-          },
-          {
-            path: '/views-impressora',
-            element: <VisualizacaoImpressoras />
-          },
-    
+      { path: '/register-notebook', element: <CadastroNotebook />},
+      { path: '/register-toner', element: <CadastroToner />},
+      { path: '/register-impressora', element: <CadastroImpressora />},
+      { path: '/register-tablet', element: <CadastroTablet />},
+      { path: '/views-notebooks', element: <VisualizarNotebooks />},
+      { path: '/views', element: <HomeViews />},
+      { path: '/views-tablet', element: <VisualizacaoTablet />},
+      { path: '/views-toners', element: <ConsultaToners />},
+      { path: '/views-impressora', element: <VisualizacaoImpressoras />},
+      { path: '/register-user', element: <RegistroUser />},
+      { path: '/register-mobiliaria', element: <CadastroMobiliario />},
+      { path: '/view-mobiliaria', element: <VisualizarMobiliario />},
+      { path: '/register-camera', element: <CadastroCamera />},
+      { path: '/views-camera', element: <VisualizarCamera />}
+
+   
     ],
   },
 ]);

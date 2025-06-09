@@ -116,7 +116,7 @@ export default function VisualizarNotebooks() {
         </div>
         {notebooksFiltrados.length === 0 ? (<p className="text-gray-600 text-center">Nenhum notebook encontrado.</p> ) : (
           <>
-            <table className="w-full text-sm border border-gray-200">
+            <Table className="w-full text-sm border border-gray-200">
               <thead className="bg-gray-100 text-gray-700 font-semibold">
                 <tr>
                   <th className="p-2 border text-center">Foto</th>
@@ -157,7 +157,7 @@ export default function VisualizarNotebooks() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
 
             {notebooksFiltrados.length > 10 && (<p className="text-gray-500 text-sm mt-2">Exibindo os 10 primeiros notebooks. Refine a busca para ver mais...</p>)}
           </>

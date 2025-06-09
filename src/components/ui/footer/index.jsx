@@ -14,7 +14,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-gray-100 text-gray-600 text-sm p-3 flex justify-between items-center">
+    <footer className="bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 text-white text-sm p-3 flex justify-between items-center">
       <p>👤 Usuário: {user?.email || "Desconhecido"}</p>
       <p>📅 {dateTime}</p>
     </footer>

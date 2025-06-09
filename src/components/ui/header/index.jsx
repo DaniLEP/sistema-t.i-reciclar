@@ -7,20 +7,19 @@ export default function Header() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    signOut(auth).then(() => navigate("/login"));
+    signOut(auth).then(() => navigate("/"));
   };
 
   return (
-    <header className="flex items-center justify-between bg-blue-700 text-white p-4 shadow">
+    <header className="flex items-center justify-between bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 text-white p-4 shadow">
       <div className="flex items-center gap-2">
-        <Menu className="w-6 h-6 md:hidden" />
-        <h1 className="text-xl font-bold">Sistema de T.I</h1>
+        <img src="./Logo.png" alt=""  className="w-[230px] sm:w-[230px]" />
       </div>
       <button
         onClick={handleLogout}
         className="text-sm bg-red-500 px-3 py-1 rounded hover:bg-red-600"
       >
-        Sair
+        Exit
       </button>
     </header>
   );

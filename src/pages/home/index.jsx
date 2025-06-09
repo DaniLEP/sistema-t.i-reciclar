@@ -1,20 +1,20 @@
 import Header from "../../components/ui/header/index";
 import Footer from "../../components/ui/footer/index";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, FolderKanban, FilePlus2, ViewIcon } from "lucide-react";
+import { ClipboardList, FolderKanban, FilePlus2, ViewIcon, User2Icon, SearchCheckIcon } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
 
   const cards = [
     {
-      title: "Cadastro", 
+      title: "Registers", 
       icon: <FilePlus2 className="w-10 h-10 text-blue-700" />,
       onClick: () => navigate("/register-option"),
     },
     {
-      title: "Consulta",
-      icon: <ViewIcon className="w-10 h-10 text-red-700" />,
+      title: "Search",
+      icon: <SearchCheckIcon className="w-10 h-10 text-red-700" />,
       onClick: () => navigate("/views"),
     },
     {
@@ -23,7 +23,12 @@ export default function Home() {
       onClick: () => navigate("/dashboard"),
     },
     {
-      title: "Chamados",
+      title: "Users",
+      icon: <User2Icon className="w-10 h-10 text-green-700" />,
+      onClick: () => navigate("/register-user"),
+    },
+    {
+      title: "Called",
       icon: <ClipboardList className="w-10 h-10 text-red-700" />,
       onClick: () => navigate("/chamados"),
     },
@@ -32,7 +37,8 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 p-6 bg-gray-50">
+      <hr />
+      <main className="flex-1 p-6 bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card, idx) => (
             <div key={idx} onClick={card.onClick}
@@ -45,6 +51,7 @@ export default function Home() {
           ))}
         </div>
       </main>
+      <hr />
       <Footer />
     </div>
   );

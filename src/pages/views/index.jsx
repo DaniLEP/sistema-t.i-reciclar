@@ -30,11 +30,25 @@ const opcoesCadastro = [
     rota: "/views-notebooks",
   },
   {
+    id: "Camera",
+    titulo: "Consulta de Câmeras",
+    descricao: "Gerencie as câmeras e seus periféricos.",
+    emoji: "📷",
+    rota: "/views-camera",
+  },
+  {
+    id: "Mobiliário",
+    titulo: "Consulta Mobiliária",
+    descricao: "Controle os movéis e suas especificações.",
+    emoji: "🏠",
+    rota: "/view-mobiliaria",
+  },
+  {
     id: "outro",
     titulo: "Voltar para Home",
     descricao: "Volte para a pagina anterior.",
     emoji: "↩️",
-    rota: "/",
+    rota: "/Home",
   },
 ];
 

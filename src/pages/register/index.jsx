@@ -4,37 +4,51 @@ const opcoesCadastro = [
   {
     id: "toner",
     titulo: "Cadastro de Toner",
-    descricao: "Gerencie cores, SKUs e impressoras para toners.",
+    descricao: "Cadastre cores, SKUs e impressoras para toners.",
     emoji: "🎨",
     rota: "/register-toner",
   },
   {
     id: "impressora",
     titulo: "Cadastro de Impressora",
-    descricao: "Adicione e gerencie impressoras designadas.",
+    descricao: "Cadastre impressoras designadas.",
     emoji: "🖨️",
     rota: "/register-impressora",
   },
   {
     id: "tablet",
     titulo: "Cadastro de Tablet",
-    descricao: "Controle seus tablets disponíveis e suas especificações.",
+    descricao: "Cadastre seus tablets disponíveis e suas especificações.",
     emoji: "📱",
     rota: "/register-tablet",
   },
-    {
+  {
     id: "notebook",
     titulo: "Cadastro de Notebook",
-    descricao: "Controle seus Notebooks disponíveis e suas especificações.",
+    descricao: "Cadastre seus Notebooks disponíveis e suas especificações.",
     emoji: "💻",
     rota: "/register-notebook",
+  },
+  {
+    id: "Mobiliário",
+    titulo: "Cadastro de Mobiliário",
+    descricao: "Cadastre os movéis e suas especificações.",
+    emoji: "🏠",
+    rota: "/register-mobiliaria",
+  },
+  {
+    id: "Camera",
+    titulo: "Cadastro de Câmeras",
+    descricao: "Cadastre câmeras e seus periféricos.",
+    emoji: "📷",
+    rota: "/register-camera",
   },
   {
     id: "outro",
     titulo: "Outro Cadastro",
     descricao: "Adicione novos tipos de cadastro conforme necessidade.",
     emoji: "↩️",
-    rota: "/",
+    rota: "/Home",
   },
 ];
 
