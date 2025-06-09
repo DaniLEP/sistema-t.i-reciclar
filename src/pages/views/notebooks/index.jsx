@@ -9,8 +9,8 @@ const STATUS_OPTIONS = [
   { value: "Disponível", label: "Disponível" },
   { value: "Emprestado", label: "Emprestado" },
   { value: "Quebrado", label: "Quebrado" },
-  { value: "Manutenção", label: "Manutencao" },
-  { value: "Não Encontrado", label: "naoEncontrado" },
+  { value: "Manutencao", label: "Manutencao" },
+  { value: "naoncontrado", label: "Não Encontrado" },
 
 ];
 
@@ -107,7 +107,7 @@ export default function VisualizarNotebooks() {
   }, [filtro, filtroStatus, notebooks]);
 
   const contagem = useMemo(() => {
-    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0 };
+    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0 };
     notebooks.forEach((n) => {
       if (cnt[n.status] >= 0) cnt[n.status]++;
     });
@@ -165,6 +165,12 @@ export default function VisualizarNotebooks() {
           </div>
           <div className="bg-red-100 p-2 rounded flex-1 text-center">
             Quebrado: {contagem.Quebrado}
+          </div>
+          <div className="bg-blue-200 p-2 rounded flex-1 text-center">
+            Em Manunteção: {contagem.Manutencao}
+          </div>
+          <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">
+            Não Encontrado: {contagem.naoEncontrado}
           </div>
         </div>
 
@@ -288,7 +294,7 @@ export default function VisualizarNotebooks() {
                   </select>
                 </div>
 
-                {["Emprestado", "Quebrado"].includes(selecionado.status) && (
+                {["Emprestado", "Quebrado", "Manutencao"].includes(selecionado.status) && (
                   <p><strong>Motivo:</strong> {selecionado.motivo || "–"}</p>
                 )}
 
