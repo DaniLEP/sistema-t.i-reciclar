@@ -106,8 +106,12 @@ export default function VisualizarNotebooks() {
         <input type="text" placeholder="Pesquisar por modelo, marca ou patrimônio..."
           className="w-full mb-4 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
           value={filtro} onChange={(e) => setFiltro(e.target.value)} />
-        <select className="mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
-          value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
+
+          <select
+  className="mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
+  value={filtroStatus}
+  onChange={(e) => setFiltroStatus(e.target.value)}
+>
           <option value="">Todos os Status</option> {STATUS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option> ))}
         </select>
         {/* Contagem */}
@@ -206,7 +210,7 @@ export default function VisualizarNotebooks() {
                 {/* Alterar Status */}
                 <div className="mt-8">
                   <label className="block mb-2 font-medium text-gray-700">Alterar Status</label>
-                  <select value={selecionado.status} monChange={(e) => alterarStatus(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 transition">
+                  <select value={selecionado.status} onChange={(e) => alterarStatus(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 transition">
                     {STATUS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option> ))}</select>
                 </div>
               </motion.div>
