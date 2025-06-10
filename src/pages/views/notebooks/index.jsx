@@ -11,7 +11,11 @@ const STATUS_OPTIONS = [
   { value: "Quebrado", label: "Quebrado" },
   { value: "Manutencao", label: "Manutenção" },
   { value: "naoEncontrado", label: "Não Encontrado" },
+<<<<<<< HEAD
   { value: "Controlador", label: "Controlador" },
+=======
+  { value: "Colaborador", label: "Colaborador(a)" },
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
 
 ];
 
@@ -55,7 +59,11 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
+<<<<<<< HEAD
     if (["Emprestado", "Quebrado", "Manutencao", "Controlador"].includes(novo)) 
+=======
+    if (["Emprestado", "Quebrado", "Manutencao", "Colaborador"].includes(novo)) 
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
       {setStatusNovo(novo);  setModalMotivo(true);} 
     else {const atualizado = { ...selecionado, status: novo, motivo: "" };
       setSelecionado(atualizado); atualizarFirebase(selecionado.id, novo, "");
@@ -84,7 +92,11 @@ export default function VisualizarNotebooks() {
   }, [filtro, filtroStatus, notebooks]);
 
   const contagem = useMemo(() => {
+<<<<<<< HEAD
     const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0, Controlador: 0};
+=======
+    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0, Colaborador: 0};
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
     notebooks.forEach((n) => {if (cnt[n.status] >= 0) cnt[n.status]++; });
     return cnt; }, [notebooks]);
     
@@ -108,8 +120,12 @@ export default function VisualizarNotebooks() {
         <input type="text" placeholder="Pesquisar por modelo, marca ou patrimônio..."
           className="w-full mb-4 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
           value={filtro} onChange={(e) => setFiltro(e.target.value)} />
-        <select className="mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
-          value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
+
+          <select
+  className="mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
+  value={filtroStatus}
+  onChange={(e) => setFiltroStatus(e.target.value)}
+>
           <option value="">Todos os Status</option> {STATUS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option> ))}
         </select>
         {/* Contagem */}
@@ -119,7 +135,11 @@ export default function VisualizarNotebooks() {
           <div className="bg-red-100 p-2 rounded flex-1 text-center">Quebrado: {contagem.Quebrado}</div>
           <div className="bg-blue-200 p-2 rounded flex-1 text-center">Em Manutenção: {contagem.Manutencao}</div>
           <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">Não Encontrado: {contagem.naoEncontrado}</div>
+<<<<<<< HEAD
           <div className="bg-pink-900 p-2 rounded flex-1 text-center text-white">Controlador: {contagem.Controlador}</div>
+=======
+          <div className="bg-purple-900 p-2 rounded flex-1 text-center text-white">Colaborador(a): {contagem.Colaborador}</div>
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
 
         </div>
         {/* Tabela */}
@@ -156,6 +176,7 @@ export default function VisualizarNotebooks() {
                   <td className="p-2 border text-center">{item.notaFiscal || "-"}</td>
                   <td className="p-2 border text-center max-w-[250px] truncate" title={item.obs || ""}>{item.obs || "-"} </td>
                   <td className="p-2 border text-center">
+<<<<<<< HEAD
                     <span
   className={`inline-block rounded px-2 py-1 font-semibold text-xs ${
     item.status === "Disponível"
@@ -176,6 +197,10 @@ export default function VisualizarNotebooks() {
 >
   {item.status}
 </span>
+=======
+                    <span className={`inline-block rounded px-2 py-1 font-semibold text-xs ${item.status === "Disponível" ? "bg-green-200 text-green-800" : item.status === "Colaborador" ? "bg-purple-800 text-white" : item.status === "Emprestado" ? "bg-yellow-200 text-yellow-800" :  "bg-blue-600 text-white"}`}
+                      title={item.motivo || ""}>{item.status}</span></td>
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
                   <td className="p-2 border text-center">
                     <button onClick={() => abrirModal(item)} className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">Ver Mais</button>
                   </td>
@@ -241,6 +266,7 @@ export default function VisualizarNotebooks() {
                 {/* Alterar Status */}
                 <div className="mt-8">
                   <label className="block mb-2 font-medium text-gray-700">Alterar Status</label>
+<<<<<<< HEAD
 <select 
   value={selecionado.status} 
   onChange={(e) => alterarStatus(e.target.value)} // corrigido aqui
@@ -251,6 +277,10 @@ export default function VisualizarNotebooks() {
   ))}
 </select>
 
+=======
+                  <select value={selecionado.status} onChange={(e) => alterarStatus(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 transition">
+                    {STATUS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option> ))}</select>
+>>>>>>> eb83b7d81c09f73d257d0b18f78daa890af43b64
                 </div>
               </motion.div>
             </motion.div> )}
