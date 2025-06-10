@@ -11,6 +11,8 @@ const STATUS_OPTIONS = [
   { value: "Quebrado", label: "Quebrado" },
   { value: "Manutencao", label: "Manutenção" },
   { value: "naoEncontrado", label: "Não Encontrado" },
+  { value: "Colaborador", label: "Colaborador(a)" },
+
 ];
 
 function formatDate(dateString) {
@@ -53,7 +55,7 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
-    if (["Emprestado", "Quebrado", "Manutencao"].includes(novo)) 
+    if (["Emprestado", "Quebrado", "Manutencao", "Colaborador"].includes(novo)) 
       {setStatusNovo(novo);  setModalMotivo(true);} 
     else {const atualizado = { ...selecionado, status: novo, motivo: "" };
       setSelecionado(atualizado); atualizarFirebase(selecionado.id, novo, "");
@@ -82,7 +84,7 @@ export default function VisualizarNotebooks() {
   }, [filtro, filtroStatus, notebooks]);
 
   const contagem = useMemo(() => {
-    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0,};
+    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0, Colaborador: 0};
     notebooks.forEach((n) => {if (cnt[n.status] >= 0) cnt[n.status]++; });
     return cnt; }, [notebooks]);
     
@@ -121,6 +123,8 @@ export default function VisualizarNotebooks() {
           <div className="bg-red-100 p-2 rounded flex-1 text-center">Quebrado: {contagem.Quebrado}</div>
           <div className="bg-blue-200 p-2 rounded flex-1 text-center">Em Manutenção: {contagem.Manutencao}</div>
           <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">Não Encontrado: {contagem.naoEncontrado}</div>
+          <div className="bg-purple-900 p-2 rounded flex-1 text-center text-white">Colaborador(a): {contagem.Colaborador}</div>
+
         </div>
         {/* Tabela */}
         {notebooksFiltrados.length === 0 ? (
@@ -156,7 +160,7 @@ export default function VisualizarNotebooks() {
                   <td className="p-2 border text-center">{item.notaFiscal || "-"}</td>
                   <td className="p-2 border text-center max-w-[250px] truncate" title={item.obs || ""}>{item.obs || "-"} </td>
                   <td className="p-2 border text-center">
-                    <span className={`inline-block rounded px-2 py-1 font-semibold text-xs ${item.status === "Disponível" ? "bg-green-200 text-green-800" : item.status === "Emprestado" ? "bg-yellow-200 text-yellow-800" : "bg-red-200 text-red-800"}`}
+                    <span className={`inline-block rounded px-2 py-1 font-semibold text-xs ${item.status === "Disponível" ? "bg-green-200 text-green-800" : item.status === "Colaborador" ? "bg-purple-800 text-white" : item.status === "Emprestado" ? "bg-yellow-200 text-yellow-800" :  "bg-blue-600 text-white"}`}
                       title={item.motivo || ""}>{item.status}</span></td>
                   <td className="p-2 border text-center">
                     <button onClick={() => abrirModal(item)} className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">Ver Mais</button>
