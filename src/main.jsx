@@ -22,6 +22,8 @@ import CadastroMobiliario from './pages/register/mobiliario';
 import VisualizarMobiliario from './pages/views/mobiliario';
 import CadastroCamera from './pages/register/camera';
 import VisualizarCamera from './pages/views/camera';
+import CadastroFones from './pages/register/fones';
+import VisualizarFones from './pages/views/fones';
 
 const router = createBrowserRouter([
   {
@@ -46,9 +48,10 @@ const router = createBrowserRouter([
       { path: '/register-mobiliaria', element: <CadastroMobiliario />},
       { path: '/view-mobiliaria', element: <VisualizarMobiliario />},
       { path: '/register-camera', element: <CadastroCamera />},
-      { path: '/views-camera', element: <VisualizarCamera />}
+      { path: '/views-camera', element: <VisualizarCamera />},
+      { path: '/register-fone', element: <CadastroFones />},
+      { path: '/view-fone', element: <VisualizarFones />}
 
-   
     ],
   },
 ]);

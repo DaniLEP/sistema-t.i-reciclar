@@ -44,6 +44,13 @@ const opcoesCadastro = [
     rota: "/view-mobiliaria",
   },
   {
+    id: "Fone",
+    titulo: "Consulte seus Fones de Ouvido",
+    descricao:"Gerencie os Fones de Ouvidos do Instituto.",
+    emoji: "🎧",
+    rota: "/view-fone",
+  },
+  {
     id: "outro",
     titulo: "Voltar para Home",
     descricao: "Volte para a pagina anterior.",
@@ -56,7 +63,7 @@ export default function HomeViews() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 p-6">
       <header className="max-w-6xl mx-auto mb-10 text-center">
-        <h1 className="text-6xl font-bold text-white">Sistema de Consulta</h1>
+        <h1 className="text-6xl font-bold text-white">Consulta de Equipamentos</h1>
         <p className="text-white mt-2"> Escolha uma opção abaixo que deseja visualizar.</p>
       </header>
 

@@ -43,6 +43,13 @@ const opcoesCadastro = [
     emoji: "📷",
     rota: "/register-camera",
   },
+    {
+    id: "Fone",
+    titulo: "Cadastro de Fone de Ouvido",
+    descricao: "Cadastre fones de ouvidos.",
+    emoji: "🎧",
+    rota: "/register-fone",
+  },
   {
     id: "outro",
     titulo: "Outro Cadastro",
@@ -56,10 +63,9 @@ export default function HomeRegister() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 p-6">
       <header className="max-w-5xl mx-auto mb-10 text-center">
-        <h1 className="text-6xl font-bold text-white">Sistema de Cadastros</h1>
+        <h1 className="text-6xl font-bold text-white">Cadastros de Equipamentos </h1>
         <p className="text-white mt-2">Escolha uma opção abaixo para iniciar o cadastro.</p>
       </header>
-
       <main className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {opcoesCadastro.map(({ id, titulo, descricao, emoji, rota }) => (
           <Link key={id} to={rota}

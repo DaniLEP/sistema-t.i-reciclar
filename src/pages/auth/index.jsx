@@ -16,26 +16,18 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, senha);
       const uid = userCredential.user.uid;
-
-      // Verifica se o UID existe na tabela de usuários
       const db = getDatabase();
       const userRef = ref(db, `usuarios/${uid}`);
       const snapshot = await get(userRef);
-
-      if (snapshot.exists()) {
-        navigate('/Home'); // Usuário válido, pode entrar
-      } else {
-        setErro('Usuário não autorizado');
-        auth.signOut(); // Desloga se não estiver cadastrado na tabela de usuários
-      }
-
-    } catch (err) {setErro('Email ou senha inválidos'); }
+      if (snapshot.exists()) {navigate('/Home');} 
+      else {setErro('Usuário não autorizado'); auth.signOut(); }} 
+    catch (err) {setErro('Email ou senha inválidos'); }
   };
 
   const redefinirSenha = async () => {
     if (!email) return setErro('Digite seu e-mail para redefinir');
     try { await sendPasswordResetEmail(auth, email);
-       setErro('Link de redefinição enviado para seu e-mail');} 
+      setErro('Link de redefinição enviado para seu e-mail');} 
     catch { setErro('Erro ao enviar e-mail');}
   };
 
