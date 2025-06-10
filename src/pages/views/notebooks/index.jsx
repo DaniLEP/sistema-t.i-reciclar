@@ -11,6 +11,8 @@ const STATUS_OPTIONS = [
   { value: "Quebrado", label: "Quebrado" },
   { value: "Manutencao", label: "Manutenção" },
   { value: "naoEncontrado", label: "Não Encontrado" },
+  { value: "Controlador", label: "Controlador" },
+
 ];
 
 function formatDate(dateString) {
@@ -53,7 +55,7 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
-    if (["Emprestado", "Quebrado", "Manutencao"].includes(novo)) 
+    if (["Emprestado", "Quebrado", "Manutencao", "Controlador"].includes(novo)) 
       {setStatusNovo(novo);  setModalMotivo(true);} 
     else {const atualizado = { ...selecionado, status: novo, motivo: "" };
       setSelecionado(atualizado); atualizarFirebase(selecionado.id, novo, "");
@@ -82,7 +84,7 @@ export default function VisualizarNotebooks() {
   }, [filtro, filtroStatus, notebooks]);
 
   const contagem = useMemo(() => {
-    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0,};
+    const cnt = { Disponível: 0, Emprestado: 0, Quebrado: 0, Manutencao: 0, naoEncontrado: 0, Controlador: 0};
     notebooks.forEach((n) => {if (cnt[n.status] >= 0) cnt[n.status]++; });
     return cnt; }, [notebooks]);
     
@@ -117,6 +119,8 @@ export default function VisualizarNotebooks() {
           <div className="bg-red-100 p-2 rounded flex-1 text-center">Quebrado: {contagem.Quebrado}</div>
           <div className="bg-blue-200 p-2 rounded flex-1 text-center">Em Manutenção: {contagem.Manutencao}</div>
           <div className="bg-orange-900 p-2 rounded flex-1 text-center text-white">Não Encontrado: {contagem.naoEncontrado}</div>
+          <div className="bg-pink-900 p-2 rounded flex-1 text-center text-white">Controlador: {contagem.Controlador}</div>
+
         </div>
         {/* Tabela */}
         {notebooksFiltrados.length === 0 ? (
@@ -152,8 +156,26 @@ export default function VisualizarNotebooks() {
                   <td className="p-2 border text-center">{item.notaFiscal || "-"}</td>
                   <td className="p-2 border text-center max-w-[250px] truncate" title={item.obs || ""}>{item.obs || "-"} </td>
                   <td className="p-2 border text-center">
-                    <span className={`inline-block rounded px-2 py-1 font-semibold text-xs ${item.status === "Disponível" ? "bg-green-200 text-green-800" : item.status === "Emprestado" ? "bg-yellow-200 text-yellow-800" : "bg-red-200 text-red-800"}`}
-                      title={item.motivo || ""}>{item.status}</span></td>
+                    <span
+  className={`inline-block rounded px-2 py-1 font-semibold text-xs ${
+    item.status === "Disponível"
+      ? "bg-green-200 text-green-800"
+      : item.status === "Controlador"
+      ? "bg-pink-200 text-pink-800" // corrigido aqui
+      : item.status === "Emprestado"
+      ? "bg-yellow-200 text-yellow-800"
+      : item.status === "Manutencao"
+      ? "bg-blue-200 text-blue-800"
+      : item.status === "Quebrado"
+      ? "bg-red-200 text-red-800"
+      : item.status === "naoEncontrado"
+      ? "bg-orange-900 text-white"
+      : "bg-gray-200 text-gray-600"
+  }`}
+  title={item.motivo || ""}
+>
+  {item.status}
+</span>
                   <td className="p-2 border text-center">
                     <button onClick={() => abrirModal(item)} className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">Ver Mais</button>
                   </td>
@@ -194,11 +216,24 @@ export default function VisualizarNotebooks() {
                     <p><strong>VR-BEM:</strong> {selecionado.vrbem || "-"}</p>
                     <p><strong>Data de Cadastro:</strong> {formatDate(selecionado.dataCadastro || "-")}</p>
                     <p><strong>Ano:</strong> {selecionado.ano || "-"}</p>
-                    <p><strong>Status:</strong><span  className={`ml-2 inline-block px-2 py-1 rounded text-xs font-semibold ${
-                        selecionado.status === "Disponível"
-                          ? "bg-green-200 text-green-800" : selecionado.status === "Emprestado" ? "bg-yellow-200 text-yellow-800"
-                          : selecionado.status === "Quebrado" ? "bg-red-200 text-red-800" : selecionado.status === "Manutencao" 
-                          ? "bg-blue-200 text-blue-800" : "bg-gray-200 text-gray-600" }`}title={selecionado.motivo || ""}>    {selecionado.status} </span>
+                    <p><strong>Status:</strong><span className={`ml-2 inline-block px-2 py-1 rounded text-xs font-semibold ${
+  selecionado.status === "Disponível"
+    ? "bg-green-200 text-green-800"
+    : selecionado.status === "Emprestado"
+    ? "bg-yellow-200 text-yellow-800"
+    : selecionado.status === "Quebrado"
+    ? "bg-red-200 text-red-800"
+    : selecionado.status === "Manutencao"
+    ? "bg-blue-200 text-blue-800"
+    : selecionado.status === "naoEncontrado"
+    ? "bg-orange-900 text-white"
+    : selecionado.status === "Controlador"
+    ? "bg-pink-200 text-pink-800" // corrigido aqui
+    : "bg-gray-200 text-gray-600"
+}`} title={selecionado.motivo || ""}>
+  {selecionado.status}
+</span>
+
                     </p>{selecionado.motivo && (<p className="sm:col-span-2"><strong>Motivo:</strong> {selecionado.motivo}</p>)}
                     <p className="sm:col-span-2"><strong>Observações:</strong> {selecionado.obs || "-"}</p>
                   </div>
@@ -206,8 +241,16 @@ export default function VisualizarNotebooks() {
                 {/* Alterar Status */}
                 <div className="mt-8">
                   <label className="block mb-2 font-medium text-gray-700">Alterar Status</label>
-                  <select value={selecionado.status} monChange={(e) => alterarStatus(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 transition">
-                    {STATUS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option> ))}</select>
+<select 
+  value={selecionado.status} 
+  onChange={(e) => alterarStatus(e.target.value)} // corrigido aqui
+  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
+>
+  {STATUS_OPTIONS.map((opt) => (
+    <option key={opt.value} value={opt.value}>{opt.label}</option>
+  ))}
+</select>
+
                 </div>
               </motion.div>
             </motion.div> )}
