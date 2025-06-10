@@ -141,9 +141,8 @@ export default function VisualizarNotebooks() {
               {notebooksFiltrados.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="p-2 border text-center">
-                    {item.fotoBase64 ? (
-                      <img src={item.fotoBase64} className="max-w-[100px] max-h-[80px] object-contain mx-auto" />
-                    ) : <span className="text-gray-400 italic">Sem foto</span>}
+
+                  <span className="text-gray-400 italic">Sem foto</span>
                   </td>
                   <td className="p-2 border text-center">{item.patrimonio || "-"}</td>
                   <td className="p-2 border text-center">{item.marca || "-"}</td>
@@ -179,9 +178,7 @@ export default function VisualizarNotebooks() {
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Foto */}
                   <div className="flex-shrink-0 w-full md:w-56 h-40 md:h-56 rounded-lg overflow-hidden border border-gray-300 shadow-sm mx-auto md:mx-0">
-                    {selecionado.fotoBase64 ? (
-                      <img src={selecionado.fotoBase64} alt={`Foto do notebook ${selecionado.modelo || selecionado.patrimonio}`} className="w-full h-full object-contain bg-gray-50"/>
-                    ) : (<div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400 italic">Sem foto</div>)}
+                    <div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400 italic">Sem foto</div>
                   </div>
                   {/* Informações */}
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-gray-700 text-sm">

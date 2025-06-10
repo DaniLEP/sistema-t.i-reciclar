@@ -28,17 +28,17 @@ export default function CadastroNotebook() {
 
   const navigate = useNavigate();
 
-  // Converte arquivo para base64 e salva no estado
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // // Converte arquivo para base64 e salva no estado
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, fotoBase64: reader.result }));
-    };
-    reader.readAsDataURL(file);
-  };
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     setForm((prev) => ({ ...prev, fotoBase64: reader.result }));
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -94,17 +94,15 @@ export default function CadastroNotebook() {
             { label: "Local", name: "local" },
             { label: "Parceiro", name: "parceiro" },
             { label: "Nota Fiscal", name: "notaFiscal" },
-            { label: "Observações", name: "obs", required: false },
-          ].map(({ label, name, required = true }) => (
+            { label: "Observações", name: "obs",  },
+          ].map(({ label, name = true }) => (
             <div key={name}>
               <label className="block text-gray-700 font-medium mb-1">{label}</label>
               <input
                 type="text"
                 name={name}
                 value={form[name]}
-                onChange={handleChange}
-                required={required}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                onChange={handleChange}                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               />
             </div>
           ))}
@@ -117,7 +115,7 @@ export default function CadastroNotebook() {
               name="dataCadastro"
               value={form.dataCadastro}
               onChange={handleChange}
-              required
+              
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
@@ -129,7 +127,7 @@ export default function CadastroNotebook() {
               name="ano"
               value={form.ano}
               onChange={handleChange}
-              required
+              
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <option value="" disabled>Selecione o ano</option>
@@ -147,7 +145,7 @@ export default function CadastroNotebook() {
               name="projeto"
               value={form.projeto}
               onChange={handleChange}
-              required
+              
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <option value="" disabled>Selecione o projeto</option>
@@ -181,7 +179,7 @@ export default function CadastroNotebook() {
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
-
+{/* 
           <div>
             <label className="block text-gray-700 font-medium mb-1">Foto do Notebook</label>
             <Input
@@ -197,7 +195,7 @@ export default function CadastroNotebook() {
                 className="mt-3 max-w-xs max-h-48 rounded-md object-contain border"
               />
             )}
-          </div>
+          </div> */}
 
           <motion.button
             whileTap={{ scale: 0.97 }}
