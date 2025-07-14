@@ -1,38 +1,62 @@
-import { useState } from "react";
-import { Input } from "../../../components/ui/input/input";
-import { Button } from "../../../components/ui/button/button";
-import { db } from "../../../../firebase";
-import { ref, push, get, update } from "firebase/database";
-import { Label } from "../../../components/ui/label/label";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Printer, Save, ArrowLeft } from "lucide-react";
+"use client"
+
+import { useState } from "react"
+import { Input } from "../../../components/ui/input"
+import { Button } from "../../../components/ui/button"
+import { db } from "../../../../firebase"
+import { ref, push, get, update } from "firebase/database"
+import { Label } from "../../../components/ui/label"
+import { useNavigate } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
+import { Printer, Save, ArrowLeft, CheckCircle, AlertCircle, Info, Loader2, Package } from "lucide-react"
 
 // Opções de seleção
-const cores = ["Preto", "Ciano", "Magenta", "Amarelo"];
-const impressoras = ["HP", "BROTHER"];
+const cores = ["Preto", "Ciano", "Magenta", "Amarelo"]
+const impressoras = ["HP", "BROTHER"]
 
-// Componente de notificação
+// Componente de notificação melhorado
 function Notification({ message, tipo = "info", onClose }) {
-  const bgColors = {
-    info: "bg-blue-500",
-    success: "bg-green-500",
-    error: "bg-red-500",
-  };
+  const configs = {
+    info: {
+      bg: "bg-blue-50 border-blue-200",
+      text: "text-blue-800",
+      icon: Info,
+      iconColor: "text-blue-600",
+    },
+    success: {
+      bg: "bg-green-50 border-green-200",
+      text: "text-green-800",
+      icon: CheckCircle,
+      iconColor: "text-green-600",
+    },
+    error: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-800",
+      icon: AlertCircle,
+      iconColor: "text-red-600",
+    },
+  }
 
-  if (!message) return null;
-  setTimeout(onClose, 3000);
+  const config = configs[tipo]
+  const IconComponent = config.icon
+
+  if (!message) return null
+
+  setTimeout(onClose, 3000)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -30 }}
-      className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-md shadow-xl text-white font-medium ${bgColors[tipo]} z-50`}
+      initial={{ opacity: 0, y: -30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+      className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-xl shadow-lg border ${config.bg} z-50 max-w-md`}
     >
-      {message}
+      <div className="flex items-center gap-3">
+        <IconComponent className={`w-5 h-5 ${config.iconColor}`} />
+        <span className={`font-medium ${config.text}`}>{message}</span>
+      </div>
     </motion.div>
-  );
+  )
 }
 
 // Componente principal
@@ -42,62 +66,59 @@ export default function CadastroToner() {
     sku: "",
     impressora: impressoras[0],
     quantidade: 1,
-  });
+  })
 
-  const [notif, setNotif] = useState({ message: "", tipo: "info" });
-  const navigate = useNavigate();
+  const [notif, setNotif] = useState({ message: "", tipo: "info" })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const navigate = useNavigate()
 
   // Atualização dos campos
   function handleChange(e) {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: name === "quantidade" ? Number(value) : value,
-    }));
+    }))
   }
 
   // Submissão do formulário
   async function handleSubmit(e) {
-    e.preventDefault();
-    const { sku, cor, impressora, quantidade } = formData;
+    e.preventDefault()
+    const { sku, cor, impressora, quantidade } = formData
 
     if (!sku || quantidade < 1) {
       setNotif({
         message: "SKU e quantidade válidos são obrigatórios.",
         tipo: "error",
-      });
-      return;
+      })
+      return
     }
 
-    try {
-      const snapshot = await get(ref(db, "toners"));
-      const dados = snapshot.val() || {};
+    setIsSubmitting(true)
 
+    try {
+      const snapshot = await get(ref(db, "toners"))
+      const dados = snapshot.val() || {}
       const tonerExistenteEntry = Object.entries(dados).find(
-        ([, val]) =>
-          val.sku === sku &&
-          val.impressora === impressora &&
-          val.cor === cor
-      );
+        ([, val]) => val.sku === sku && val.impressora === impressora && val.cor === cor,
+      )
 
       if (tonerExistenteEntry) {
-        const [id, tonerExistente] = tonerExistenteEntry;
-        const novaQuantidade = (tonerExistente.quantidade || 0) + quantidade;
-
+        const [id, tonerExistente] = tonerExistenteEntry
+        const novaQuantidade = (tonerExistente.quantidade || 0) + quantidade
         await update(ref(db, "toners/" + id), {
           quantidade: novaQuantidade,
-        });
-
+        })
         setNotif({
           message: `Quantidade atualizada para ${novaQuantidade}`,
           tipo: "success",
-        });
+        })
       } else {
-        await push(ref(db, "toners"), { cor, sku, impressora, quantidade });
+        await push(ref(db, "toners"), { cor, sku, impressora, quantidade })
         setNotif({
           message: "Toner cadastrado com sucesso!",
           tipo: "success",
-        });
+        })
       }
 
       // Resetar formulário
@@ -106,110 +127,183 @@ export default function CadastroToner() {
         sku: "",
         impressora: impressoras[0],
         quantidade: 1,
-      });
+      })
     } catch (error) {
-      console.error("Erro ao cadastrar toner:", error);
-      setNotif({ message: "Erro ao cadastrar toner.", tipo: "error" });
+      console.error("Erro ao cadastrar toner:", error)
+      setNotif({ message: "Erro ao cadastrar toner.", tipo: "error" })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
+  const inputClasses =
+    "w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+  const labelClasses = "block text-gray-700 font-medium mb-2 text-sm"
+
   return (
     <>
-      <Notification
-        message={notif.message}
-        tipo={notif.tipo}
-        onClose={() => setNotif({ message: "", tipo: "info" })}
-      />
+      <AnimatePresence>
+        <Notification
+          message={notif.message}
+          tipo={notif.tipo}
+          onClose={() => setNotif({ message: "", tipo: "info" })}
+        />
+      </AnimatePresence>
 
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-gray-900 p-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
         <motion.div
-          className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-4xl"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
+          className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 text-center mb-10 flex items-center justify-center gap-3">
-            <Printer className="text-indigo-600 w-8 h-8" />
-            Cadastro de Toner
-          </h2>
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Printer className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Cadastro de Toner</h2>
+                <p className="text-indigo-100 text-sm">Gerencie o estoque de toners para impressoras</p>
+              </div>
+            </div>
+          </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cor */}
-            <div>
-              <Label className="block text-gray-700 mb-2">Cor</Label>
-              <select
-                name="cor"
-                value={formData.cor}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              >
-                {cores.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-8">
+            {/* Informações do Produto */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                Informações do Produto
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label className={labelClasses}>
+                    SKU <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    type="text"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleChange}
+                    placeholder="Digite o SKU do toner"
+                    className={inputClasses}
+                  />
+                </div>
+                <div>
+                  <Label className={labelClasses}>
+                    Cor <span className="text-red-500">*</span>
+                  </Label>
+                  <select name="cor" value={formData.cor} onChange={handleChange} className={inputClasses}>
+                    {cores.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            {/* SKU */}
-            <div>
-              <Label className="block text-gray-700 mb-2">SKU</Label>
-              <Input
-                required
-                type="text"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                placeholder="Digite o SKU"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              />
+            {/* Compatibilidade e Estoque */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                Compatibilidade e Estoque
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label className={labelClasses}>
+                    Impressora <span className="text-red-500">*</span>
+                  </Label>
+                  <select
+                    name="impressora"
+                    value={formData.impressora}
+                    onChange={handleChange}
+                    className={inputClasses}
+                  >
+                    {impressoras.map((imp) => (
+                      <option key={imp} value={imp}>
+                        {imp}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className={labelClasses}>
+                    Quantidade <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      required
+                      type="number"
+                      name="quantidade"
+                      min={1}
+                      value={formData.quantidade}
+                      onChange={handleChange}
+                      className={`${inputClasses} pl-10`}
+                      placeholder="Quantidade em estoque"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Impressora */}
-            <div>
-              <Label className="block text-gray-700 mb-2">Impressora</Label>
-              <select
-                name="impressora"
-                value={formData.impressora}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              >
-                {impressoras.map((imp) => (
-                  <option key={imp} value={imp}>{imp}</option>
-                ))}
-              </select>
+            {/* Resumo do Cadastro */}
+            <div className="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Resumo do Cadastro
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500 block">SKU:</span>
+                  <span className="font-medium text-gray-800">{formData.sku || "—"}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Cor:</span>
+                  <span className="font-medium text-gray-800">{formData.cor}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Impressora:</span>
+                  <span className="font-medium text-gray-800">{formData.impressora}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Quantidade:</span>
+                  <span className="font-medium text-gray-800">{formData.quantidade}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Quantidade */}
-            <div>
-              <Label className="block text-gray-700 mb-2">Quantidade</Label>
-              <Input
-                required
-                type="number"
-                name="quantidade"
-                min={1}
-                value={formData.quantidade}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              />
-            </div>
-
-            {/* Botões */}
-            <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
               <Button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 shadow-md transition flex items-center gap-2 w-full md:w-auto"
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-3 flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 rounded-xl text-sm shadow-lg transition-all duration-200 disabled:cursor-not-allowed"
               >
-                <Save className="w-5 h-5" />
-                Cadastrar
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Cadastrando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Cadastrar Toner
+                  </>
+                )}
               </Button>
 
               <Button
                 type="button"
                 onClick={() => navigate("/register-option")}
-                className="bg-gradient-to-r from-red-500 to-red-800 hover:from-red-600 hover:to-red-900 text-white rounded-xl px-6 py-3 shadow-md transition flex items-center gap-2 w-full md:w-auto"
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-3 px-8 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 disabled:text-gray-400 font-semibold py-4 rounded-xl text-sm transition-all duration-200 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-5 h-5" />
                 Voltar
@@ -217,7 +311,7 @@ export default function CadastroToner() {
             </div>
           </form>
         </motion.div>
-      </motion.div>
+      </div>
     </>
-  );
+  )
 }

@@ -1,26 +1,11 @@
-import { Menu } from "lucide-react";
-import { signOut } from "firebase/auth";
-import { auth } from "../../../../firebase";
-import { useNavigate } from "react-router-dom";
-
 export default function Header() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    signOut(auth).then(() => navigate("/"));
-  };
-
   return (
-    <header className="flex items-center justify-between bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 text-white p-4 shadow">
-      <div className="flex items-center gap-2">
-        <img src="./Logo.png" alt=""  className="w-[230px] sm:w-[230px]" />
+    <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">System I.T</h1>
+        <div className="flex items-center space-x-4">
+        </div>
       </div>
-      <button
-        onClick={handleLogout}
-        className="text-sm bg-red-500 px-3 py-1 rounded hover:bg-red-600"
-      >
-        Exit
-      </button>
     </header>
-  );
+  )
 }

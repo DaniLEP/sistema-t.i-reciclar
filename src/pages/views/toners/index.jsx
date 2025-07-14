@@ -1,178 +1,193 @@
-import React, { useEffect, useState } from "react";
-import { db } from "../../../../firebase";
-import { ref, onValue, update } from "firebase/database";
-import { motion } from "framer-motion";
-import { Palette, Printer, ArrowLeft, AlertTriangle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useNavigate } from "react"
+ // Assuming firebase.js is at the root or one level up
+import { ref, onValue, update } from "firebase/database"
+import { motion } from "framer-motion"
+import { Palette, Printer, ArrowLeft, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { db } from "../../../../firebase"
 
 export default function ConsultaToners() {
-  const [toners, setToners] = useState([]);
-  const [resumo, setResumo] = useState({});
-  const [filtroImpressora, setFiltroImpressora] = useState("TODAS");
+  const [toners, setToners] = useState([])
+  const [resumo, setResumo] = useState({})
+  const [filtroImpressora, setFiltroImpressora] = useState("TODAS")
+  const router = useNavigate() // Changed to useRouter for Next.js App Router
 
   useEffect(() => {
     const unsub = onValue(ref(db, "toners"), (snapshot) => {
-      const data = snapshot.val();
+      const data = snapshot.val()
       if (data) {
-        const lista = Object.entries(data).map(([id, toner]) => ({ id, ...toner }));
-        setToners(lista);
+        const lista = Object.entries(data).map(([id, toner]) => ({ id, ...toner }))
+        setToners(lista)
         const agrupado = lista.reduce((acc, item) => {
-          const key = item.impressora;
-          acc[key] = (acc[key] || 0) + (item.quantidade || 0);
-          return acc;
-        }, {});
-        setResumo(agrupado);
+          const key = item.impressora
+          acc[key] = (acc[key] || 0) + (item.quantidade || 0)
+          return acc
+        }, {})
+        setResumo(agrupado)
       } else {
-        setToners([]);
-        setResumo({});
+        setToners([])
+        setResumo({})
       }
-    });
-    return () => unsub();
-  }, []);
+    })
+    return () => unsub()
+  }, [])
 
-  const navigate = useNavigate();
-  const impressorasUnicas = [...new Set(toners.map(t => t.impressora))];
-  const tonersFiltrados = filtroImpressora === "TODAS"
-    ? toners
-    : toners.filter(t => t.impressora === filtroImpressora);
+  const impressorasUnicas = [...new Set(toners.map((t) => t.impressora))]
+  const tonersFiltrados =
+    filtroImpressora === "TODAS" ? toners : toners.filter((t) => t.impressora === filtroImpressora)
 
   const handleRetiradaToner = async (id, quantidadeAtual) => {
-    if (quantidadeAtual <= 0) return;
-
-    const novaQuantidade = quantidadeAtual - 1;
-
+    if (quantidadeAtual <= 0) return
+    const novaQuantidade = quantidadeAtual - 1
     try {
       await update(ref(db, `toners/${id}`), {
         quantidade: novaQuantidade,
-      });
+      })
     } catch (error) {
-      console.error("Erro ao atualizar quantidade:", error);
+      console.error("Erro ao atualizar quantidade:", error)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4 sm:p-6">
       <motion.div
-        className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-8"
+        className="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <Palette className="w-8 h-8 text-indigo-600" />
-          <h2 className="text-3xl font-bold text-gray-800">Consulta de Toners</h2>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <Palette className="w-7 h-7 text-gray-700" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Consulta de Toners</h2>
+          </div>
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/views")}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft className="w-5 h-5" /> Voltar
+          </Button>
         </div>
 
         {/* Filtro de impressora */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-indigo-600" />
-            <label htmlFor="filtro" className="text-sm font-medium text-gray-700">Filtrar por Impressora:</label>
-            <select
-              id="filtro"
-              value={filtroImpressora}
-              onChange={(e) => setFiltroImpressora(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <option value="TODAS">Todas</option>
-              {impressorasUnicas.map((imp) => (
-                <option key={imp} value={imp}>{imp}</option>
-              ))}
-            </select>
+          <div className="flex items-center gap-3">
+            <Printer className="w-5 h-5 text-gray-600" />
+            <Label htmlFor="filtro-impressora" className="text-sm font-medium text-gray-700">
+              Filtrar por Impressora:
+            </Label>
+            <Select value={filtroImpressora} onValueChange={setFiltroImpressora}>
+              <SelectTrigger id="filtro-impressora" className="w-[180px]">
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TODAS">Todas</SelectItem>
+                {impressorasUnicas.map((imp) => (
+                  <SelectItem key={imp} value={imp}>
+                    {imp}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Resumo por impressora */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {Object.entries(resumo).map(([impressora, total]) => (
-            <motion.div
+            <Card
               key={impressora}
-              className="bg-indigo-100 text-indigo-900 p-4 rounded-xl shadow hover:scale-[1.02] transition-transform"
-              whileHover={{ scale: 1.03 }}
+              className="bg-gray-50 text-gray-900 p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
             >
-              <h4 className="text-lg font-semibold">Impressora {impressora}</h4>
-              <p className="text-sm">{total} toner(s) no total</p>
-            </motion.div>
+              <CardHeader className="p-0 pb-2">
+                <CardTitle className="text-lg font-semibold text-gray-700">Impressora {impressora}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <p className="text-sm text-gray-600">{total} toner(s) no total</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
         {/* Tabela de toners */}
-        <div className="overflow-x-auto rounded-xl shadow">
-          <table className="w-full text-left border border-gray-200 bg-white">
-            <thead className="bg-indigo-600 text-white">
-              <tr>
-                <th className="py-3 px-4">Cor</th>
-                <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4">Impressora</th>
-                <th className="py-3 px-4">Quantidade</th>
-                <th className="py-3 px-4">Ação</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="overflow-x-auto rounded-lg border shadow-sm">
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead className="py-3 px-4 text-gray-700 font-semibold">Cor</TableHead>
+                <TableHead className="py-3 px-4 text-gray-700 font-semibold">SKU</TableHead>
+                <TableHead className="py-3 px-4 text-gray-700 font-semibold">Impressora</TableHead>
+                <TableHead className="py-3 px-4 text-gray-700 font-semibold text-center">Quantidade</TableHead>
+                <TableHead className="py-3 px-4 text-gray-700 font-semibold text-center">Ação</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {tonersFiltrados.length > 0 ? (
                 tonersFiltrados.map((toner) => (
                   <React.Fragment key={toner.id}>
-                    <tr className="border-b hover:bg-indigo-50 transition">
-                      <td className="py-2 px-4 flex items-center gap-2">
+                    <TableRow className="border-b hover:bg-gray-50 transition-colors">
+                      <TableCell className="py-2 px-4 flex items-center gap-2">
                         <span
-                          className="w-4 h-4 rounded-full border"
+                          className="w-4 h-4 rounded-full border border-gray-300"
                           style={{
-                            backgroundColor: {
-                              preto: "#000000",
-                              magenta: "#FF00FF",
-                              ciano: "#00FFFF",
-                              amarelo: "#FFFF00",
-                            }[toner.cor.toLowerCase()] || "transparent",
+                            backgroundColor:
+                              {
+                                preto: "#000000",
+                                magenta: "#FF00FF",
+                                ciano: "#00FFFF",
+                                amarelo: "#FFFF00",
+                              }[toner.cor.toLowerCase()] || "transparent",
                           }}
                         ></span>
                         {toner.cor}
-                      </td>
-                      <td className="py-2 px-4">{toner.sku}</td>
-                      <td className="py-2 px-4">{toner.impressora}</td>
-                      <td className="py-2 px-4">{toner.quantidade}</td>
-                      <td className="py-2 px-4">
-                        <button
+                      </TableCell>
+                      <TableCell className="py-2 px-4">{toner.sku}</TableCell>
+                      <TableCell className="py-2 px-4">{toner.impressora}</TableCell>
+                      <TableCell className="py-2 px-4 text-center font-medium">
+                        <Badge variant="outline" className="text-base">
+                          {toner.quantidade}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-2 px-4 text-center">
+                        <Button
+                          variant="destructive"
+                          size="sm"
                           onClick={() => handleRetiradaToner(toner.id, toner.quantidade)}
-                          className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded transition"
                           disabled={toner.quantidade === 0}
                         >
                           Retirar
-                        </button>
-                      </td>
-                    </tr>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                     {toner.quantidade <= 1 && (
-                      <tr className="bg-yellow-100 border-b">
-                        <td colSpan={5} className="py-2 px-4 text-sm text-yellow-800 flex items-center gap-2">
+                      <TableRow className="bg-yellow-50 border-b">
+                        <TableCell colSpan={5} className="py-2 px-4 text-sm text-yellow-800 flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                          Estoque mínimo para o toner <strong>{toner.cor.toUpperCase()}</strong> ({toner.sku}) da impressora <strong>{toner.impressora}</strong>.
-                        </td>
-                      </tr>
+                          Estoque mínimo para o toner <span className="font-semibold">{toner.cor.toUpperCase()}</span> (
+                          {toner.sku}) da impressora <span className="font-semibold">{toner.impressora}</span>.
+                        </TableCell>
+                      </TableRow>
                     )}
                   </React.Fragment>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={5} className="text-center py-6 text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6 text-gray-500">
                     Nenhum toner encontrado.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-
-        {/* Botão Voltar */}
-        <motion.button
-          onClick={() => navigate("/views")}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          aria-label="Voltar"
-          title="Voltar"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 font-semibold shadow-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 bg-white hover:bg-indigo-600 hover:text-white select-none mt-10"
-        >
-          <ArrowLeft size={20} />
-          Voltar
-        </motion.button>
       </motion.div>
     </div>
-  );
+  )
 }

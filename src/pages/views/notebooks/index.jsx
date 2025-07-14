@@ -1,8 +1,18 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { getDatabase, ref, onValue, update } from "firebase/database";
-import { app } from "../../../../firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Laptop, ArrowLeft, X } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { app } from "../../../../firebase";
 import { useNavigate } from "react-router-dom";
 
 const STATUS_OPTIONS = [
@@ -25,7 +35,7 @@ function formatDate(dateString) {
 export default function VisualizarNotebooks() {
   const [notebooks, setNotebooks] = useState([]);
   const [filtro, setFiltro] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos"); // Valor padrão "todos"
   const [modalAberto, setModalAberto] = useState(false);
   const [selecionado, setSelecionado] = useState(null);
   const [modalMotivo, setModalMotivo] = useState(false);
@@ -78,19 +88,14 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return;
-
-    if (
-      ["Emprestado", "Quebrado", "Manutencao", "Controlador"].includes(novo)
-    ) {
+    if (["Emprestado", "Quebrado", "Manutencao", "Controlador"].includes(novo)) {
       setStatusNovo(novo);
       setModalMotivo(true);
     } else {
       const atualizado = { ...selecionado, status: novo, motivo: "" };
       setSelecionado(atualizado);
       atualizarFirebase(selecionado.id, novo, "");
-      setNotebooks((old) =>
-        old.map((n) => (n.id === selecionado.id ? atualizado : n))
-      );
+      setNotebooks((old) => old.map((n) => (n.id === selecionado.id ? atualizado : n)));
     }
   };
 
@@ -103,9 +108,7 @@ export default function VisualizarNotebooks() {
     };
     setSelecionado(atualizado);
     atualizarFirebase(selecionado.id, statusNovo, motivo.trim());
-    setNotebooks((old) =>
-      old.map((n) => (n.id === selecionado.id ? atualizado : n))
-    );
+    setNotebooks((old) => old.map((n) => (n.id === selecionado.id ? atualizado : n)));
     setModalMotivo(false);
     setMotivo("");
   };
@@ -118,7 +121,7 @@ export default function VisualizarNotebooks() {
           modelo?.toLowerCase()?.includes(lf) ||
           marca?.toLowerCase()?.includes(lf) ||
           patrimonio?.toLowerCase()?.includes(lf);
-        const statusOk = !filtroStatus || status === filtroStatus;
+        const statusOk = filtroStatus === "todos" || status === filtroStatus;
         return textoOk && statusOk;
       })
       .sort((a, b) => (a.modelo || "").localeCompare(b.modelo || ""));
@@ -132,6 +135,7 @@ export default function VisualizarNotebooks() {
       Manutencao: 0,
       naoEncontrado: 0,
       Controlador: 0,
+      Colaborador: 0,
     };
     notebooks.forEach((n) => {
       if (cnt[n.status] >= 0) cnt[n.status]++;
@@ -141,305 +145,272 @@ export default function VisualizarNotebooks() {
 
   const voltarPagina = () => navigate("/views");
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Disponível":
+        return "bg-green-100 text-green-800";
+      case "Emprestado":
+        return "bg-yellow-100 text-yellow-800";
+      case "Quebrado":
+        return "bg-red-100 text-red-800";
+      case "Manutencao":
+        return "bg-blue-100 text-blue-800";
+      case "naoEncontrado":
+        return "bg-orange-100 text-orange-800";
+      case "Controlador":
+        return "bg-purple-100 text-purple-800";
+      case "Colaborador":
+        return "bg-indigo-100 text-indigo-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-600 via-indigo-700 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4 sm:p-6">
       <motion.div
-        className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-8 overflow-x-auto"
+        className="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         {/* Voltar + Título */}
-        <div className="flex justify-end mb-8">
-          <button
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <Laptop className="w-7 h-7 text-gray-700" />
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Notebooks Cadastrados</h2>
+          </div>
+          <Button
+            variant="ghost"
             onClick={voltarPagina}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-400 font-semibold"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
           >
-            <ArrowLeft /> Voltar
-          </button>
-        </div>
-        <div className="flex items-center gap-3 mb-6">
-          <Laptop />
-          <h2 className="text-3xl font-bold">Notebooks Cadastrados</h2>
+            <ArrowLeft className="w-5 h-5" /> Voltar
+          </Button>
         </div>
 
         {/* Filtros */}
-        <input
-          type="text"
-          placeholder="Pesquisar por modelo, marca ou patrimônio..."
-          className="w-full mb-4 p-3 rounded border focus:ring-2 focus:ring-indigo-600"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-        />
-        <select
-          className="mb-4 p-2 border rounded focus:ring-2 focus:ring-indigo-600"
-          value={filtroStatus}
-          onChange={(e) => setFiltroStatus(e.target.value)}
-        >
-          <option value="">Todos os Status</option>
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <Input
+            type="text"
+            placeholder="Pesquisar por modelo, marca ou patrimônio..."
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            className="w-full"
+          />
+          <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Todos os Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os Status</SelectItem>
+              {STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Contagem */}
-        <div className="flex gap-2 mb-4 flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-8">
           {Object.entries(contagem).map(([key, value]) => (
-            <div
-              key={key}
-              className={`p-2 flex-1 text-center rounded ${
-                {
-                  Disponível: "bg-green-100",
-                  Emprestado: "bg-yellow-100",
-                  Quebrado: "bg-red-100",
-                  Manutencao: "bg-blue-200",
-                  naoEncontrado: "bg-orange-900 text-white",
-                  Controlador: "bg-pink-900 text-white",
-                }[key] || "bg-gray-200"
-              }`}
-            >
-              {key}: {value}
-            </div>
+            <Card key={key} className="p-3 text-center shadow-sm">
+              <CardTitle className="text-lg font-semibold text-gray-700">
+                {STATUS_OPTIONS.find((opt) => opt.value === key)?.label || key}
+              </CardTitle>
+              <CardContent className="p-0 mt-1 text-2xl font-bold text-gray-900">{value}</CardContent>
+            </Card>
           ))}
         </div>
 
         {/* Tabela */}
         {notebooksFiltrados.length === 0 ? (
-          <p className="text-center text-gray-600">Nenhum notebook encontrado.</p>
+          <p className="text-center text-gray-600 py-8">Nenhum notebook encontrado com os filtros aplicados.</p>
         ) : (
-          <table className="w-full text-sm border">
-            <thead className="bg-gray-100">
-              <tr>
-                {[
-                  "Foto",
-                  "Patrimônio",
-                  "Marca",
-                  "Modelo",
-                  "Local",
-                  "Projeto",
-                  "Nota Fiscal",
-                  "Observações",
-                  "Status",
-                  "Ações",
-                ].map((h) => (
-                  <th key={h} className="p-2 border text-center">
-                    {h}
-                  </th>
+          <div className="overflow-x-auto rounded-lg border">
+            <Table>
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  {[
+                    "Foto",
+                    "Patrimônio",
+                    "Marca",
+                    "Modelo",
+                    "Local",
+                    "Projeto",
+                    "Nota Fiscal",
+                    "Observações",
+                    "Status",
+                    "Ações",
+                  ].map((h) => (
+                    <TableHead key={h} className="text-center font-semibold text-gray-700 whitespace-nowrap">
+                      {h}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {notebooksFiltrados.map((item) => (
+                  <TableRow key={item.id} className="hover:bg-gray-50">
+                    <TableCell className="text-center">
+                      <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-xs italic mx-auto">
+                        Sem foto
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center font-medium">{item.patrimonio || "-"}</TableCell>
+                    <TableCell className="text-center">{item.marca || "-"}</TableCell>
+                    <TableCell className="text-center">{item.modelo || "-"}</TableCell>
+                    <TableCell className="text-center">{item.local || "-"}</TableCell>
+                    <TableCell className="text-center">{item.projeto || "-"}</TableCell>
+                    <TableCell className="text-center">{item.notaFiscal || "-"}</TableCell>
+                    <TableCell className="text-center max-w-[200px] truncate" title={item.obs || ""}>
+                      {item.obs || "-"}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        className={`text-xs font-semibold ${getStatusColor(item.status)}`}
+                        title={item.motivo || ""}
+                      >
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button variant="outline" size="sm" onClick={() => abrirModal(item)}>
+                        Ver Mais
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {notebooksFiltrados.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="p-2 border text-center">
-                    <span className="italic text-gray-400">Sem foto</span>
-                  </td>
-                  <td className="p-2 border text-center">
-                    {item.patrimonio || "-"}
-                  </td>
-                  <td className="p-2 border text-center">{item.marca || "-"}</td>
-                  <td className="p-2 border text-center">{item.modelo || "-"}</td>
-                  <td className="p-2 border text-center">{item.local || "-"}</td>
-                  <td className="p-2 border text-center">{item.projeto || "-"}</td>
-                  <td className="p-2 border text-center">
-                    {item.notaFiscal || "-"}
-                  </td>
-                  <td
-                    className="p-2 border text-center max-w-[250px] truncate"
-                    title={item.obs || ""}
-                  >
-                    {item.obs || "-"}
-                  </td>
-                  <td className="p-2 border text-center">
-                    <span
-                      className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                        item.status === "Disponível"
-                          ? "bg-green-200 text-green-800"
-                          : item.status === "Emprestado"
-                          ? "bg-yellow-200 text-yellow-800"
-                          : item.status === "Quebrado"
-                          ? "bg-red-200 text-red-800"
-                          : item.status === "Manutencao"
-                          ? "bg-blue-200 text-blue-800"
-                          : item.status === "naoEncontrado"
-                          ? "bg-orange-900 text-white"
-                          : item.status === "Controlador"
-                          ? "bg-pink-200 text-pink-800"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                      title={item.motivo || ""}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="p-2 border text-center">
-                    <button
-                      onClick={() => abrirModal(item)}
-                      className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                    >
-                      Ver Mais
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </TableBody>
+            </Table>
+          </div>
         )}
       </motion.div>
 
       {/* Modal de detalhes */}
-      <AnimatePresence>
-        {modalAberto && selecionado && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative p-6"
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+{/* Modal de detalhes */}
+<AnimatePresence>
+  {modalAberto && selecionado && (
+    <Dialog open={modalAberto} onOpenChange={setModalAberto}>
+      <DialogContent className="max-w-4xl p-6 sm:p-8 rounded-xl shadow-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-center text-gray-800 text-2xl sm:text-3xl font-semibold mb-4">
+            Detalhes do Notebook
+          </DialogTitle>
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+              aria-label="Fechar modal"
             >
-              <button
-                onClick={fecharModal}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
-                aria-label="Fechar modal"
-              >
-                <X />
-              </button>
-              <h3 className="text-center text-indigo-700 text-3xl font-semibold mb-6">
-                Detalhes do Notebook
-              </h3>
+              <X className="w-5 h-5" />
+            </Button>
+          </DialogClose>
+        </DialogHeader>
 
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-shrink-0 w-full md:w-56 h-56 rounded-lg border shadow-sm overflow-hidden mx-auto md:mx-0 bg-gray-100 text-gray-400 flex items-center justify-center italic">
-                  Sem foto
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-sm">
+          {[
+            ["Patrimônio", selecionado.patrimonio],
+            ["Marca", selecionado.marca],
+            ["Modelo", selecionado.modelo],
+            ["Local", selecionado.local],
+            ["Projeto", selecionado.projeto],
+            ["Parceiro", selecionado.parceiro],
+            ["Nota Fiscal", selecionado.notaFiscal],
+            ["NCM", selecionado.NCM],
+            ["VR‑BEM", selecionado.vrbem],
+            ["Data de Cadastro", formatDate(selecionado.dataCadastro)],
+            ["Ano", selecionado.ano],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <Label className="font-semibold text-gray-600">{label}:</Label>
+              <p className="text-gray-800">{value || "-"}</p>
+            </div>
+          ))}
 
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-sm">
-                  {[
-                    ["Patrimônio", selecionado.patrimonio],
-                    ["Marca", selecionado.marca],
-                    ["Modelo", selecionado.modelo],
-                    ["Local", selecionado.local],
-                    ["Projeto", selecionado.projeto],
-                    ["Parceiro", selecionado.parceiro],
-                    ["Nota Fiscal", selecionado.notaFiscal],
-                    ["NCM", selecionado.NCM],
-                    ["VR‑BEM", selecionado.vrbem],
-                    ["Data de Cadastro", formatDate(selecionado.dataCadastro)],
-                    ["Ano", selecionado.ano],
-                  ].map(([label, value]) => (
-                    <p key={label}>
-                      <strong>{label}:</strong> {value || "-"}
-                    </p>
-                  ))}
+          <div>
+            <Label className="font-semibold text-gray-600">Status:</Label>
+            <Badge
+              className={`ml-2 text-sm font-semibold ${getStatusColor(selecionado.status)}`}
+              title={selecionado.motivo}
+            >
+              {selecionado.status}
+            </Badge>
+          </div>
 
-                  <p className="sm:col-span-2">
-                    <strong>Status:</strong>{" "}
-                    <span
-                      className={`ml-2 inline-block px-2 py-1 rounded text-xs font-semibold ${
-                        selecionado.status === "Disponível"
-                          ? "bg-green-200 text-green-800"
-                          : selecionado.status === "Emprestado"
-                          ? "bg-yellow-200 text-yellow-800"
-                          : selecionado.status === "Quebrado"
-                          ? "bg-red-200 text-red-800"
-                          : selecionado.status === "Manutencao"
-                          ? "bg-blue-200 text-blue-800"
-                          : selecionado.status === "naoEncontrado"
-                          ? "bg-orange-900 text-white"
-                          : "bg-pink-200 text-pink-800"
-                      }`}
-                      title={selecionado.motivo}
-                    >
-                      {selecionado.status}
-                    </span>
-                  </p>
+          {selecionado.motivo && (
+            <div>
+              <Label className="font-semibold text-gray-600">Motivo:</Label>
+              <p className="text-gray-800">{selecionado.motivo}</p>
+            </div>
+          )}
 
-                  {selecionado.motivo && (
-                    <p className="sm:col-span-2">
-                      <strong>Motivo:</strong> {selecionado.motivo}
-                    </p>
-                  )}
-                  <p className="sm:col-span-2">
-                    <strong>Observações:</strong> {selecionado.obs || "-"}
-                  </p>
-                </div>
-              </div>
+          <div className="sm:col-span-2">
+            <Label className="font-semibold text-gray-600">Observações:</Label>
+            <p className="text-gray-800">{selecionado.obs || "-"}</p>
+          </div>
+        </div>
 
-              <div className="mt-8">
-                <label className="block font-medium mb-2">
-                  Alterar Status
-                </label>
-                <select
-                  className="w-full p-3 border rounded-md focus:ring-2 focus:ring-indigo-600"
-                  value={selecionado.status}
-                  onChange={(e) => alterarStatus(e.target.value)}
-                >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <div className="mt-6">
+          <Label htmlFor="status-select" className="block font-semibold text-gray-700 mb-2">
+            Alterar Status
+          </Label>
+          <Select value={selecionado.status} onValueChange={alterarStatus}>
+            <SelectTrigger id="status-select" className="w-full">
+              <SelectValue placeholder="Selecione um status" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )}
+</AnimatePresence>
+
 
       {/* Modal do motivo */}
       <AnimatePresence>
         {modalMotivo && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full relative"
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              exit={{ y: 100 }}
-            >
-              <button
-                onClick={fecharMotivo}
-                className="absolute top-3 right-3 text-gray-500 hover:text-black"
-              >
-                <X />
-              </button>
-              <h3 className="text-xl text-red-700 font-bold mb-4">
-                Informe o motivo da alteração
-              </h3>
-              <textarea
+          <Dialog open={modalMotivo} onOpenChange={setModalMotivo}>
+            <DialogContent className="max-w-md p-6 rounded-xl shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-red-700 mb-2">Informe o motivo da alteração</DialogTitle>
+                <DialogClose asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+                    aria-label="Fechar modal"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </DialogClose>
+              </DialogHeader>
+              <Textarea
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
                 placeholder="Digite o motivo..."
-                className="w-full h-28 p-2 border rounded focus:ring-2 focus:ring-red-500 resize-none"
+                className="min-h-[120px] resize-y"
               />
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  onClick={fecharMotivo}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
+              <DialogFooter className="mt-4 flex justify-end gap-2">
+                <Button variant="outline" onClick={fecharMotivo}>
                   Cancelar
-                </button>
-                <button
-                  onClick={salvarMotivo}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                >
+                </Button>
+                <Button onClick={salvarMotivo} className="bg-red-600 hover:bg-red-700">
                   Salvar
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </AnimatePresence>
     </div>
