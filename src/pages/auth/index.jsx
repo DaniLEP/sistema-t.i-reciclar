@@ -6,11 +6,11 @@ import { ref, get, update } from "firebase/database"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/Button" 
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { auth, db } from "../../../firebase"
+import { Button } from "@/components/ui/button"
 
 const UserType = { ADMIN: "Admin", COZINHA: "Cozinha", TI: "T.I" }
 
