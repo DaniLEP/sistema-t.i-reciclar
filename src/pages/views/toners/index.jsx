@@ -1,21 +1,41 @@
-import React, { useEffect, useState, useNavigate } from "react"
- // Assuming firebase.js is at the root or one level up
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ref, onValue, update } from "firebase/database"
 import { motion } from "framer-motion"
 import { Palette, Printer, ArrowLeft, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
+
 import { db } from "../../../../firebase"
 
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+
 export default function ConsultaToners() {
-  const [toners, setToners] = useState([])
+  const [toners, setToners] = useState([]) // Array<{ id: string, cor: string, sku: string, impressora: string, quantidade: number }>
   const [resumo, setResumo] = useState({})
   const [filtroImpressora, setFiltroImpressora] = useState("TODAS")
-  const router = useNavigate() // Changed to useRouter for Next.js App Router
+  const navigate = useNavigate()
 
   useEffect(() => {
     const unsub = onValue(ref(db, "toners"), (snapshot) => {
@@ -23,6 +43,7 @@ export default function ConsultaToners() {
       if (data) {
         const lista = Object.entries(data).map(([id, toner]) => ({ id, ...toner }))
         setToners(lista)
+
         const agrupado = lista.reduce((acc, item) => {
           const key = item.impressora
           acc[key] = (acc[key] || 0) + (item.quantidade || 0)
@@ -34,20 +55,21 @@ export default function ConsultaToners() {
         setResumo({})
       }
     })
+
     return () => unsub()
   }, [])
 
   const impressorasUnicas = [...new Set(toners.map((t) => t.impressora))]
   const tonersFiltrados =
-    filtroImpressora === "TODAS" ? toners : toners.filter((t) => t.impressora === filtroImpressora)
+    filtroImpressora === "TODAS"
+      ? toners
+      : toners.filter((t) => t.impressora === filtroImpressora)
 
   const handleRetiradaToner = async (id, quantidadeAtual) => {
     if (quantidadeAtual <= 0) return
     const novaQuantidade = quantidadeAtual - 1
     try {
-      await update(ref(db, `toners/${id}`), {
-        quantidade: novaQuantidade,
-      })
+      await update(ref(db, `toners/${id}`), { quantidade: novaQuantidade })
     } catch (error) {
       console.error("Erro ao atualizar quantidade:", error)
     }
@@ -65,18 +87,21 @@ export default function ConsultaToners() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <Palette className="w-7 h-7 text-gray-700" />
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Consulta de Toners</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Consulta de Toners
+            </h2>
           </div>
           <Button
             variant="ghost"
-            onClick={() => router.push("/views")}
+            onClick={() => navigate("/views")}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
           >
-            <ArrowLeft className="w-5 h-5" /> Voltar
+            <ArrowLeft className="w-5 h-5" />
+            Voltar
           </Button>
         </div>
 
-        {/* Filtro de impressora */}
+        {/* Filtro */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
             <Printer className="w-5 h-5 text-gray-600" />
@@ -99,15 +124,14 @@ export default function ConsultaToners() {
           </div>
         </div>
 
-        {/* Resumo por impressora */}
+        {/* Resumo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {Object.entries(resumo).map(([impressora, total]) => (
-            <Card
-              key={impressora}
-              className="bg-gray-50 text-gray-900 p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-            >
+            <Card key={impressora} className="bg-gray-50 text-gray-900 p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
               <CardHeader className="p-0 pb-2">
-                <CardTitle className="text-lg font-semibold text-gray-700">Impressora {impressora}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-700">
+                  Impressora {impressora}
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <p className="text-sm text-gray-600">{total} toner(s) no total</p>
@@ -116,16 +140,16 @@ export default function ConsultaToners() {
           ))}
         </div>
 
-        {/* Tabela de toners */}
+        {/* Tabela */}
         <div className="overflow-x-auto rounded-lg border shadow-sm">
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow>
-                <TableHead className="py-3 px-4 text-gray-700 font-semibold">Cor</TableHead>
-                <TableHead className="py-3 px-4 text-gray-700 font-semibold">SKU</TableHead>
-                <TableHead className="py-3 px-4 text-gray-700 font-semibold">Impressora</TableHead>
-                <TableHead className="py-3 px-4 text-gray-700 font-semibold text-center">Quantidade</TableHead>
-                <TableHead className="py-3 px-4 text-gray-700 font-semibold text-center">Ação</TableHead>
+                <TableHead className="py-3 px-4">Cor</TableHead>
+                <TableHead className="py-3 px-4">SKU</TableHead>
+                <TableHead className="py-3 px-4">Impressora</TableHead>
+                <TableHead className="py-3 px-4 text-center">Quantidade</TableHead>
+                <TableHead className="py-3 px-4 text-center">Ação</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,14 +167,14 @@ export default function ConsultaToners() {
                                 magenta: "#FF00FF",
                                 ciano: "#00FFFF",
                                 amarelo: "#FFFF00",
-                              }[toner.cor.toLowerCase()] || "transparent",
+                              }[toner.cor?.toLowerCase()] || "transparent",
                           }}
-                        ></span>
+                        />
                         {toner.cor}
                       </TableCell>
                       <TableCell className="py-2 px-4">{toner.sku}</TableCell>
                       <TableCell className="py-2 px-4">{toner.impressora}</TableCell>
-                      <TableCell className="py-2 px-4 text-center font-medium">
+                      <TableCell className="py-2 px-4 text-center">
                         <Badge variant="outline" className="text-base">
                           {toner.quantidade}
                         </Badge>
@@ -170,8 +194,9 @@ export default function ConsultaToners() {
                       <TableRow className="bg-yellow-50 border-b">
                         <TableCell colSpan={5} className="py-2 px-4 text-sm text-yellow-800 flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                          Estoque mínimo para o toner <span className="font-semibold">{toner.cor.toUpperCase()}</span> (
-                          {toner.sku}) da impressora <span className="font-semibold">{toner.impressora}</span>.
+                          Estoque mínimo para o toner{" "}
+                          <span className="font-semibold">{toner.cor?.toUpperCase()}</span> ({toner.sku}) da impressora{" "}
+                          <span className="font-semibold">{toner.impressora}</span>.
                         </TableCell>
                       </TableRow>
                     )}
