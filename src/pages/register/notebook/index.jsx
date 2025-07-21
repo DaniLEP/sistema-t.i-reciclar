@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom"
 export default function CadastroNotebook() {
   const [form, setForm] = useState({
     patrimonio: "",
+    notebook: "",
     marca: "",
     modelo: "",
     projeto: "",
@@ -59,6 +60,7 @@ export default function CadastroNotebook() {
       setTimeout(() => {
         setForm({
           patrimonio: "",
+          notebook: "",
           marca: "",
           modelo: "",
           projeto: "",
@@ -125,6 +127,19 @@ export default function CadastroNotebook() {
                   type="text"
                   name="patrimonio"
                   value={form.patrimonio}
+                  onChange={handleChange}
+                  className={inputClasses}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>
+                  Notebook <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="notebook"
+                  value={form.notebook}
                   onChange={handleChange}
                   className={inputClasses}
                   required

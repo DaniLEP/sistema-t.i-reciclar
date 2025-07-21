@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Header from "../../components/ui/header/index"
 import Footer from "../../components/ui/footer/index"
@@ -16,10 +14,49 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react"
+import { getDatabase, ref, get } from "firebase/database"
+import { app } from "../../../firebase"
 
 export default function Home() {
   const [hoveredCard, setHoveredCard] = useState(null)
   const navigate = useNavigate()
+
+  const [totais, setTotais] = useState({
+    notebooks: 0,
+    tablets: 0,
+    moveis: 0,
+    fones: 0,
+    impressoras: 0,
+  })
+
+  const [loadingTotais, setLoadingTotais] = useState(true)
+
+  const db = getDatabase(app)
+
+  useEffect(() => {
+    async function fetchTotals() {
+      setLoadingTotais(true)
+
+      const keys = ["notebooks", "tablets", "moveis", "fones", "impressoras"]
+
+      const promises = keys.map(async (key) => {
+        const snapshot = await get(ref(db, key))
+        const data = snapshot.val()
+        return { key, count: data ? Object.keys(data).length : 0 }
+      })
+
+      const results = await Promise.all(promises)
+      const newTotals = {}
+      results.forEach(({ key, count }) => {
+        newTotals[key] = count
+      })
+
+      setTotais(newTotals)
+      setLoadingTotais(false)
+    }
+
+    fetchTotals()
+  }, [db])
 
   const cards = [
     {
@@ -32,6 +69,17 @@ export default function Home() {
       textColor: "text-blue-700",
       badge: "New",
       badgeColor: "bg-blue-100 text-blue-700",
+    },
+    {
+      title: "Profile",
+      description: "View and edit your user profile",
+      icon: <User2Icon className="w-8 h-8" />,
+      onClick: () => navigate("/perfil"),
+      color: "from-indigo-500 to-indigo-600",
+      bgColor: "bg-indigo-50",
+      textColor: "text-indigo-700",
+      badge: "You",
+      badgeColor: "bg-indigo-100 text-indigo-700",
     },
     {
       title: "Search",
@@ -154,24 +202,34 @@ export default function Home() {
 
         {/* Quick Stats */}
         <div className="mt-16 max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-gray-900 mb-2">2,847</div>
-              <div className="text-gray-600">Total de Equipamentos</div>
+          {loadingTotais ? (
+            <div className="flex justify-center py-10">
+              <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
             </div>
-            <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-gray-900 mb-2">98.5%</div>
-              <div className="text-gray-600">Equipamentos em Manutenção</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+              <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="text-3xl font-bold text-gray-900 mb-2">{totais.notebooks}</div>
+                <div className="text-gray-600">Total de Notebooks</div>
+              </div>
+              <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="text-3xl font-bold text-gray-900 mb-2">{totais.tablets}</div>
+                <div className="text-gray-600">Total de Tablets</div>
+              </div>
+              <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="text-3xl font-bold text-gray-900 mb-2">{totais.moveis}</div>
+                <div className="text-gray-600">Total de Mobiliarios</div>
+              </div>
+              <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="text-3xl font-bold text-gray-900 mb-2">{totais.fones}</div>
+                <div className="text-gray-600">Total de Fones</div>
+              </div>
+              <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="text-3xl font-bold text-gray-900 mb-2">{totais.impressoras}</div>
+                <div className="text-gray-600">Total de Impressoras</div>
+              </div>
             </div>
-            <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-gray-900 mb-2">156</div>
-              <div className="text-gray-600">Equipamentos Emprestados</div>
-            </div>
-            <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-gray-900 mb-2">156</div>
-              <div className="text-gray-600">Equipamentos Disponíveis</div>
-            </div>
-          </div>
+          )}
         </div>
       </main>
 

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Save, ArrowLeft, HeadsetIcon, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
+
 export default function CadastroFones() {
   const [form, setForm] = useState({
     patrimonio: "",
@@ -17,6 +18,8 @@ export default function CadastroFones() {
     obs: "",
     status: "Disponível",
   })
+  const [fones, setFones] = useState([])
+
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState(null)

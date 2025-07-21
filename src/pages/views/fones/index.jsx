@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { getDatabase, ref, onValue, update } from "firebase/database"
 import { app } from "../../../../firebase"
@@ -8,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import * as XLSX from "xlsx"
 
 const STATUS_OPTIONS = ["Disponível", "Quebrado", "Emprestado", "Não encontrado"]
 
@@ -71,7 +70,8 @@ export default function VisualizarFones() {
 
   const handleSalvarStatus = () => {
     if (!modalTablet) return
-    if (["Quebrado", "Emprestado", "Nao Encontrado"].includes(modalTablet.status)) {
+    // Corrigido aqui o "Não encontrado" com acento
+    if (["Quebrado", "Emprestado", "Não encontrado"].includes(modalTablet.status)) {
       setMotivo(modalTablet.motivo || "")
       setMotivoReadonly(!!modalTablet.motivo)
       setModalMotivoOpen(true)
@@ -86,6 +86,22 @@ export default function VisualizarFones() {
       return
     }
     updateTabletData(modalTablet.id, modalTablet.status, motivo.trim())
+  }
+
+  const exportarParaExcel = () => {
+    const dadosParaExportar = fones.map((item) => ({
+      Patrimônio: item.patrimonio || "-",
+      Marca: item.marca || "-",
+      Modelo: item.modelo || "-",
+      Local: item.local || "-",
+      Status: item.status || "-",
+      Motivo: item.motivo || "-",
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(dadosParaExportar)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Fones")
+    XLSX.writeFile(wb, "fones.xlsx")
   }
 
   if (isLoading) {
@@ -128,7 +144,11 @@ export default function VisualizarFones() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Resumo por Status</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {STATUS_OPTIONS.map((status) => {
-                const config = STATUS_CONFIG[status]
+                // Proteção contra status inválido:
+                const config = STATUS_CONFIG[status] || {
+                  color: "bg-gray-100 text-gray-800 border-gray-200",
+                  icon: XCircle,
+                }
                 const IconComponent = config.icon
                 return (
                   <div
@@ -158,7 +178,11 @@ export default function VisualizarFones() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {fones.map((tablet, index) => {
-                const statusConfig = STATUS_CONFIG[tablet.status]
+                // Proteção contra status inválido:
+                const statusConfig = STATUS_CONFIG[tablet.status] || {
+                  color: "bg-gray-100 text-gray-800 border-gray-200",
+                  icon: XCircle,
+                }
                 const StatusIcon = statusConfig.icon
                 return (
                   <motion.div
@@ -222,14 +246,23 @@ export default function VisualizarFones() {
           )}
 
           {/* Back Button */}
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/views")}
-            className="mt-8 flex items-center justify-center gap-3 px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl text-sm transition-all duration-200"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Voltar
-          </motion.button>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={exportarParaExcel}
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl text-sm shadow-md transition-all duration-200"
+            >
+              Exportar para Excel
+            </button>
+
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/views")}
+              className="px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl text-sm transition-all duration-200"
+            >
+              <ArrowLeft className="w-5 h-5 inline-block mr-2" />
+              Voltar
+            </motion.button>
+          </div>
         </div>
       </motion.div>
 
@@ -322,7 +355,10 @@ export default function VisualizarFones() {
                         <span className="text-gray-500 block">Status:</span>
                         <div className="flex items-center gap-2 mt-1">
                           {(() => {
-                            const config = STATUS_CONFIG[modalTablet.status]
+                            const config = STATUS_CONFIG[modalTablet.status] || {
+                              color: "bg-gray-100 text-gray-800 border-gray-200",
+                              icon: XCircle,
+                            }
                             const StatusIcon = config.icon
                             return (
                               <div
@@ -366,9 +402,9 @@ export default function VisualizarFones() {
                     <div className="flex items-end">
                       <button
                         onClick={handleSalvarStatus}
-                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                       >
-                        Salvar Status
+                        Salvar
                       </button>
                     </div>
                   </div>
@@ -387,32 +423,52 @@ export default function VisualizarFones() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setModalMotivoOpen(false)}
+            onClick={() => {
+              if (!motivoReadonly) setModalMotivoOpen(false)
+            }}
           >
             <motion.div
-              className="bg-white rounded-2xl max-w-md w-full p-6"
+              className="bg-white rounded-2xl max-w-xl w-full p-6"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold mb-4 text-gray-800">Informe o Motivo ou Responsável</h3>
+              <h3 className="text-lg font-semibold mb-4">Informe o motivo ou responsável</h3>
               <textarea
+                className="w-full border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                rows={4}
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
                 readOnly={motivoReadonly}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none"
-                rows={4}
-                placeholder="Descreva o motivo ou informe o responsável..."
+                placeholder="Ex: Emprestado para João, quebrado na sala 3, etc."
               />
-              {!motivoReadonly && (
-                <button
-                  onClick={handleSalvarMotivo}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
-                >
-                  Salvar Motivo
-                </button>
-              )}
+              <div className="mt-6 flex justify-end gap-4">
+                {!motivoReadonly && (
+                  <button
+                    onClick={() => setModalMotivoOpen(false)}
+                    className="px-5 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all duration-200"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                {!motivoReadonly && (
+                  <button
+                    onClick={handleSalvarMotivo}
+                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200"
+                  >
+                    Salvar
+                  </button>
+                )}
+                {motivoReadonly && (
+                  <button
+                    onClick={() => setModalMotivoOpen(false)}
+                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200"
+                  >
+                    Fechar
+                  </button>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -420,3 +476,82 @@ export default function VisualizarFones() {
     </div>
   )
 }
+
+
+// import { useState } from "react"
+// import * as XLSX from "xlsx"
+// import { getDatabase, ref, set } from "firebase/database"
+// import { toast } from "react-toastify"
+// import { Input } from "@/components/ui/input"
+// import { app } from "../../../../firebase" // certifique-se que está correto
+
+// export default function CadastroProdutos() {
+//   const [loading, setLoading] = useState(false)
+//   const db = getDatabase(app)
+
+//   const handleFileUpload = async (e) => {
+//     const file = e.target.files?.[0]
+//     if (!file) return
+
+//     setLoading(true)
+//     const reader = new FileReader()
+
+//     reader.onload = async (evt) => {
+//       try {
+//         const binaryStr = evt.target?.result
+//         const workbook = XLSX.read(binaryStr, { type: "binary" })
+//         const firstSheet = workbook.SheetNames[0]
+//         const worksheet = workbook.Sheets[firstSheet]
+//         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" })
+
+//         if (!jsonData || jsonData.length === 0) {
+//           toast.error("❌ Planilha vazia ou mal formatada.")
+//           setLoading(false)
+//           return
+//         }
+
+//         for (const item of jsonData) {
+//           const patrimonio = item.patrimonio?.toString().trim()
+//           if (!patrimonio) continue
+
+//           const produto = {
+//             patrimonio,
+//             notebook: item.notebook?.toString().trim() || "",
+//             marca: item.marca?.toString().trim() || "",
+//             modelo: item.modelo?.toString().trim() || "",
+//             local: item.local?.toString().trim() || "",
+//             status: item.status?.toString().trim() || "",
+//             motivo: item.motivo?.toString().trim() || "",
+//           }
+
+//           const produtoRef = ref(db, `fones/${patrimonio}`)
+//           await set(produtoRef, produto)
+//         }
+
+//         toast.success("✅ Planilha importada com sucesso!")
+//       } catch (error) {
+//         console.error("Erro ao importar:", error)
+//         toast.error("❌ Erro ao importar planilha.")
+//       } finally {
+//         setLoading(false)
+//       }
+//     }
+
+//     reader.readAsBinaryString(file)
+//   }
+
+//   return (
+//     <div className="my-6">
+//       <label className="font-medium mb-2 block">
+//         📥 Importar planilha Excel (.xlsx ou .xls)
+//       </label>
+//       <Input
+//         type="file"
+//         accept=".xlsx,.xls"
+//         onChange={handleFileUpload}
+//         disabled={loading}
+//       />
+//       {loading && <p className="text-blue-700 mt-2">⏳ Importando dados...</p>}
+//     </div>
+//   )
+// }

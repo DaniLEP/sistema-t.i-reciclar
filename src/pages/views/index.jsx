@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
+import { getDatabase, ref, onValue } from "firebase/database"
+import { app } from "../../../firebase" // ajuste o caminho para seu arquivo firebase
 import { SearchBar } from "../../components/ui/search-bar"
 import { BreadcrumbNav } from "../../components/ui/breadcrumb-nav"
 import { EquipmentCard } from "../../components/ui/equipment-card"
@@ -76,7 +78,23 @@ const opcoesCadastro = [
 export default function HomeViews() {
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState("grid")
+  const [quantidades, setQuantidades] = useState({})
   const navigate = useNavigate()
+  const db = getDatabase(app)
+
+  useEffect(() => {
+    const categorias = ["notebooks", "fones", "tablets", "impressoras"]
+
+    categorias.forEach((categoria) => {
+      const refDb = ref(db, categoria)
+
+      onValue(refDb, (snapshot) => {
+        const data = snapshot.val()
+        const count = data ? Object.keys(data).length : 0
+        setQuantidades((old) => ({ ...old, [categoria]: count }))
+      })
+    })
+  }, [db])
 
   const filteredOptions = useMemo(() => {
     if (!searchQuery) return opcoesCadastro
@@ -88,13 +106,6 @@ export default function HomeViews() {
         opcao.categoria.toLowerCase().includes(searchQuery.toLowerCase())
     )
   }, [searchQuery])
-
-  const categoryCounts = useMemo(() => {
-    return opcoesCadastro.reduce((acc, item) => {
-      acc[item.categoria] = (acc[item.categoria] || 0) + 1
-      return acc
-    }, {})
-  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
@@ -127,9 +138,7 @@ export default function HomeViews() {
               <span className="text-white/80 text-sm font-medium">
                 {filteredOptions.length} of {opcoesCadastro.length} items
               </span>
-              {searchQuery && (
-                <span className="text-yellow-300 text-sm">Filtered by: "{searchQuery}"</span>
-              )}
+              {searchQuery && <span className="text-yellow-300 text-sm">Filtered by: "{searchQuery}"</span>}
             </div>
 
             <div className="flex items-center gap-2">
@@ -167,6 +176,7 @@ export default function HomeViews() {
                   key={opcao.id}
                   {...opcao}
                   onClick={() => navigate(opcao.rota)}
+                  quantidade={quantidades[opcao.id] ?? 0}
                 />
               ))}
             </div>
@@ -190,13 +200,13 @@ export default function HomeViews() {
 
         <div className="max-w-4xl mx-auto mt-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(categoryCounts).map(([category, count]) => (
+            {Object.entries(quantidades).map(([categoria, count]) => (
               <div
-                key={category}
+                key={categoria}
                 className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
               >
                 <div className="text-2xl font-bold text-white mb-1">{count}</div>
-                <div className="text-white/70 text-sm capitalize">{category}</div>
+                <div className="text-white/70 text-sm capitalize">{categoria}</div>
               </div>
             ))}
           </div>

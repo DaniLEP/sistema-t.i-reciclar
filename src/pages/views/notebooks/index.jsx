@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { app } from "../../../../firebase";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+
 
 const STATUS_OPTIONS = [
   { value: "Disponível", label: "Disponível" },
@@ -165,6 +167,30 @@ export default function VisualizarNotebooks() {
         return "bg-gray-100 text-gray-800";
     }
   };
+const exportarParaExcel = () => {
+  const dadosParaExportar = notebooksFiltrados.map((item) => ({
+    Patrimônio: item.patrimonio || "-",
+    Marca: item.marca || "-",
+    Modelo: item.modelo || "-",
+    Local: item.local || "-",
+    Projeto: item.projeto || "-",
+    Parceiro: item.parceiro || "-",
+    "Nota Fiscal": item.notaFiscal || "-",
+    NCM: item.NCM || "-",
+    "VR-BEM": item.vrbem || "-",
+    "Data de Cadastro": formatDate(item.dataCadastro),
+    Ano: item.ano || "-",
+    Observações: item.obs || "-",
+    Status: item.status || "-",
+    Motivo: item.motivo || "-",
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(dadosParaExportar);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Notebooks");
+
+  XLSX.writeFile(wb, "notebooks.xlsx");
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4 sm:p-6">
@@ -187,6 +213,7 @@ export default function VisualizarNotebooks() {
           >
             <ArrowLeft className="w-5 h-5" /> Voltar
           </Button>
+          
         </div>
 
         {/* Filtros */}
@@ -198,6 +225,12 @@ export default function VisualizarNotebooks() {
             onChange={(e) => setFiltro(e.target.value)}
             className="w-full"
           />
+            <Button
+            onClick={exportarParaExcel}
+            className="bg-green-600 text-white hover:bg-green-700"
+          >
+            Exportar para Excel
+          </Button>
           <Select value={filtroStatus} onValueChange={setFiltroStatus}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Todos os Status" />
@@ -211,6 +244,7 @@ export default function VisualizarNotebooks() {
               ))}
             </SelectContent>
           </Select>
+
         </div>
 
         {/* Contagem */}
@@ -234,13 +268,12 @@ export default function VisualizarNotebooks() {
               <TableHeader className="bg-gray-50">
                 <TableRow>
                   {[
-                    "Foto",
                     "Patrimônio",
+                    "Notebook",
                     "Marca",
                     "Modelo",
                     "Local",
                     "Projeto",
-                    "Nota Fiscal",
                     "Observações",
                     "Status",
                     "Ações",
@@ -254,17 +287,12 @@ export default function VisualizarNotebooks() {
               <TableBody>
                 {notebooksFiltrados.map((item) => (
                   <TableRow key={item.id} className="hover:bg-gray-50">
-                    <TableCell className="text-center">
-                      <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-xs italic mx-auto">
-                        Sem foto
-                      </div>
-                    </TableCell>
                     <TableCell className="text-center font-medium">{item.patrimonio || "-"}</TableCell>
+                    <TableCell className="text-center font-medium">{item.notebook || "-"}</TableCell>
                     <TableCell className="text-center">{item.marca || "-"}</TableCell>
                     <TableCell className="text-center">{item.modelo || "-"}</TableCell>
                     <TableCell className="text-center">{item.local || "-"}</TableCell>
                     <TableCell className="text-center">{item.projeto || "-"}</TableCell>
-                    <TableCell className="text-center">{item.notaFiscal || "-"}</TableCell>
                     <TableCell className="text-center max-w-[200px] truncate" title={item.obs || ""}>
                       {item.obs || "-"}
                     </TableCell>
@@ -290,93 +318,92 @@ export default function VisualizarNotebooks() {
       </motion.div>
 
       {/* Modal de detalhes */}
-{/* Modal de detalhes */}
-<AnimatePresence>
-  {modalAberto && selecionado && (
-    <Dialog open={modalAberto} onOpenChange={setModalAberto}>
-      <DialogContent className="max-w-4xl p-6 sm:p-8 rounded-xl shadow-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-center text-gray-800 text-2xl sm:text-3xl font-semibold mb-4">
-            Detalhes do Notebook
-          </DialogTitle>
-          <DialogClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
-              aria-label="Fechar modal"
+      <AnimatePresence>
+        {modalAberto && selecionado && (
+          <Dialog open={modalAberto} onOpenChange={setModalAberto}>
+            <DialogContent
+              className="max-w-4xl max-h-screen overflow-y-auto p-6 sm:p-8 rounded-xl shadow-2xl"
             >
-              <X className="w-5 h-5" />
-            </Button>
-          </DialogClose>
-        </DialogHeader>
+              <DialogHeader>
+                <DialogTitle className="text-center text-gray-800 text-2xl sm:text-3xl font-semibold mb-4">
+                  Detalhes do Notebook
+                </DialogTitle>
+                <DialogClose asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+                    aria-label="Fechar modal"
+                  >
+                  </Button>
+                </DialogClose>
+              </DialogHeader>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-sm">
-          {[
-            ["Patrimônio", selecionado.patrimonio],
-            ["Marca", selecionado.marca],
-            ["Modelo", selecionado.modelo],
-            ["Local", selecionado.local],
-            ["Projeto", selecionado.projeto],
-            ["Parceiro", selecionado.parceiro],
-            ["Nota Fiscal", selecionado.notaFiscal],
-            ["NCM", selecionado.NCM],
-            ["VR‑BEM", selecionado.vrbem],
-            ["Data de Cadastro", formatDate(selecionado.dataCadastro)],
-            ["Ano", selecionado.ano],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <Label className="font-semibold text-gray-600">{label}:</Label>
-              <p className="text-gray-800">{value || "-"}</p>
-            </div>
-          ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-sm">
+                {[
+                  ["Patrimônio", selecionado.patrimonio],
+                  ["Notebook", selecionado.notebook],
+                  ["Marca", selecionado.marca],
+                  ["Modelo", selecionado.modelo],
+                  ["Local", selecionado.local],
+                  ["Projeto", selecionado.projeto],
+                  ["Parceiro", selecionado.parceiro],
+                  ["Nota Fiscal", selecionado.notaFiscal],
+                  ["NCM", selecionado.NCM],
+                  ["VR‑BEM", selecionado.vrbem],
+                  ["Data de Cadastro", formatDate(selecionado.dataCadastro)],
+                  ["Ano", selecionado.ano],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <Label className="font-semibold text-gray-600">{label}:</Label>
+                    <p className="text-gray-800">{value || "-"}</p>
+                  </div>
+                ))}
 
-          <div>
-            <Label className="font-semibold text-gray-600">Status:</Label>
-            <Badge
-              className={`ml-2 text-sm font-semibold ${getStatusColor(selecionado.status)}`}
-              title={selecionado.motivo}
-            >
-              {selecionado.status}
-            </Badge>
-          </div>
+                <div>
+                  <Label className="font-semibold text-gray-600">Status:</Label>
+                  <Badge
+                    className={`ml-2 text-sm font-semibold ${getStatusColor(selecionado.status)}`}
+                    title={selecionado.motivo}
+                  >
+                    {selecionado.status}
+                  </Badge>
+                </div>
 
-          {selecionado.motivo && (
-            <div>
-              <Label className="font-semibold text-gray-600">Motivo:</Label>
-              <p className="text-gray-800">{selecionado.motivo}</p>
-            </div>
-          )}
+                {selecionado.motivo && (
+                  <div>
+                    <Label className="font-semibold text-gray-600">Motivo:</Label>
+                    <p className="text-gray-800">{selecionado.motivo}</p>
+                  </div>
+                )}
 
-          <div className="sm:col-span-2">
-            <Label className="font-semibold text-gray-600">Observações:</Label>
-            <p className="text-gray-800">{selecionado.obs || "-"}</p>
-          </div>
-        </div>
+                <div className="sm:col-span-2">
+                  <Label className="font-semibold text-gray-600">Observações:</Label>
+                  <p className="text-gray-800">{selecionado.obs || "-"}</p>
+                </div>
+              </div>
 
-        <div className="mt-6">
-          <Label htmlFor="status-select" className="block font-semibold text-gray-700 mb-2">
-            Alterar Status
-          </Label>
-          <Select value={selecionado.status} onValueChange={alterarStatus}>
-            <SelectTrigger id="status-select" className="w-full">
-              <SelectValue placeholder="Selecione um status" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )}
-</AnimatePresence>
-
-
+              <div className="mt-6">
+                <Label htmlFor="status-select" className="block font-semibold text-gray-700 mb-2">
+                  Alterar Status
+                </Label>
+                <Select value={selecionado.status} onValueChange={alterarStatus}>
+                  <SelectTrigger id="status-select" className="w-full">
+                    <SelectValue placeholder="Selecione um status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
       {/* Modal do motivo */}
       <AnimatePresence>
         {modalMotivo && (

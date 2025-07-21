@@ -1,6 +1,5 @@
-"use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "../../../components/ui/input"
 import { Button } from "../../../components/ui/button"
 import { db } from "../../../../firebase"
@@ -11,10 +10,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Printer, Save, ArrowLeft, CheckCircle, AlertCircle, Info, Loader2, Package } from "lucide-react"
 
 // Opções de seleção
-const cores = ["Preto", "Ciano", "Magenta", "Amarelo"]
-const impressoras = ["HP", "BROTHER"]
+const cores = ["Escolha uma cor", "Preto", "Ciano", "Magenta", "Amarelo"]
+const impressoras = ["Escolha uma Impressora", "HP", "BROTHER"]
 
-// Componente de notificação melhorado
 function Notification({ message, tipo = "info", onClose }) {
   const configs = {
     info: {
@@ -40,9 +38,14 @@ function Notification({ message, tipo = "info", onClose }) {
   const config = configs[tipo]
   const IconComponent = config.icon
 
-  if (!message) return null
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onClose()
+    }, 3000)
+    return () => clearTimeout(timeout)
+  }, [message, onClose])
 
-  setTimeout(onClose, 3000)
+  if (!message) return null
 
   return (
     <motion.div
@@ -59,7 +62,6 @@ function Notification({ message, tipo = "info", onClose }) {
   )
 }
 
-// Componente principal
 export default function CadastroToner() {
   const [formData, setFormData] = useState({
     cor: cores[0],
@@ -72,7 +74,6 @@ export default function CadastroToner() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
-  // Atualização dos campos
   function handleChange(e) {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -81,14 +82,13 @@ export default function CadastroToner() {
     }))
   }
 
-  // Submissão do formulário
   async function handleSubmit(e) {
     e.preventDefault()
     const { sku, cor, impressora, quantidade } = formData
 
-    if (!sku || quantidade < 1) {
+    if (!sku || quantidade < 1 || cor === cores[0] || impressora === impressoras[0]) {
       setNotif({
-        message: "SKU e quantidade válidos são obrigatórios.",
+        message: "Todos os campos obrigatórios devem ser preenchidos.",
         tipo: "error",
       })
       return
@@ -106,11 +106,9 @@ export default function CadastroToner() {
       if (tonerExistenteEntry) {
         const [id, tonerExistente] = tonerExistenteEntry
         const novaQuantidade = (tonerExistente.quantidade || 0) + quantidade
-        await update(ref(db, "toners/" + id), {
-          quantidade: novaQuantidade,
-        })
+        await update(ref(db, `toners/${id}`), { quantidade: novaQuantidade })
         setNotif({
-          message: `Quantidade atualizada para ${novaQuantidade}`,
+          message: `Quantidade atualizada para ${novaQuantidade}.`,
           tipo: "success",
         })
       } else {
@@ -121,7 +119,6 @@ export default function CadastroToner() {
         })
       }
 
-      // Resetar formulário
       setFormData({
         cor: cores[0],
         sku: "",
@@ -143,11 +140,13 @@ export default function CadastroToner() {
   return (
     <>
       <AnimatePresence>
-        <Notification
-          message={notif.message}
-          tipo={notif.tipo}
-          onClose={() => setNotif({ message: "", tipo: "info" })}
-        />
+        {notif.message && (
+          <Notification
+            message={notif.message}
+            tipo={notif.tipo}
+            onClose={() => setNotif({ message: "", tipo: "info" })}
+          />
+        )}
       </AnimatePresence>
 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">

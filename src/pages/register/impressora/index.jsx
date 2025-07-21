@@ -333,53 +333,42 @@ export default function CadastroImpressora() {
               </motion.div>
 
               {/* Photo Upload Section */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  Foto do Equipamento
-                </h3>
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      disabled={isSubmitting}
-                      className="w-full border-2 border-dashed border-gray-300 rounded-xl px-4 py-6 text-gray-700 
-                               hover:border-indigo-400 focus:border-indigo-500 transition-all duration-200
-                               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm 
-                               file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                    />
-                    {!preview && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="flex flex-col items-center gap-2 text-gray-500">
-                          <Upload className="w-8 h-8" />
-                          <span className="text-sm font-medium">Clique para selecionar uma foto</span>
-                        </div>
-                      </div>
-                    )}
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={isSubmitting}
+                  className="
+                    w-full
+                    h-40                     /* Altura maior para área grande */
+                    border-2 border-dashed border-gray-400
+                    rounded-2xl              /* Borda mais arredondada */
+                    px-6 py-8                /* Padding interno confortável */
+                    text-gray-700
+                    hover:border-indigo-500
+                    focus:border-indigo-600
+                    transition-colors duration-300
+                    file:mr-4
+                    file:py-3
+                    file:px-6
+                    file:rounded-lg
+                    file:border-0
+                    file:text-base
+                    file:font-semibold
+                    file:bg-indigo-50
+                    file:text-indigo-700
+                    hover:file:bg-indigo-100
+                    cursor-pointer
+                  "
+                />
+                {!preview && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-gray-400 select-none">
+                    <Upload className="w-12 h-12 mb-3" />
+                    <span className="text-lg font-medium">Clique para selecionar uma foto</span>
                   </div>
-
-                  {preview && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border-2 border-gray-200"
-                    >
-                      <ImageIcon className="w-6 h-6 text-gray-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700">Foto carregada com sucesso</p>
-                        <p className="text-xs text-gray-500">Prévia da imagem:</p>
-                      </div>
-                      <img
-                        src={preview || "/placeholder.svg"}
-                        alt="Preview da impressora"
-                        className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                      />
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
+                )}
+              </div>
 
               {/* Status Display */}
               <motion.div
