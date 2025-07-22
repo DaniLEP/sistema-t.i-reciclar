@@ -75,6 +75,15 @@ const opcoesCadastro = [
     categoria: "audio",
     recentCount: 3,
   },
+    {
+    id: "t-shirt",
+    titulo: "Cadastro de Camisetas",
+    descricao: "Cadastre Camisetas com tamanhos diferentes e controle de distribuição.",
+    emoji: "👕",
+    rota: "/register-t-shirt",
+    categoria: "clothing",
+    recentCount: 3,
+  },
   {
     id: "outro",
     titulo: "Voltar para Home",

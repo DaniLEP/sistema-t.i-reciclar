@@ -27,17 +27,22 @@ import {
   Zap,
   Database,
   Clock,
+  CameraIcon,
+  Wifi,
+  Signal,
+  Eye,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"]
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#d946ef"]
 
 const chartConfig = {
-  notebooks: { label: "Notebooks", color: "hsl(var(--chart-1))" },
-  tablets: { label: "Tablets", color: "hsl(var(--chart-2))" },
-  moveis: { label: "Móveis", color: "hsl(var(--chart-3))" },
-  fones: { label: "Fones", color: "hsl(var(--chart-4))" },
-  impressoras: { label: "Impressoras", color: "hsl(var(--chart-5))" },
+  notebooks: { label: "Notebooks", color: "#0088FE" },
+  tablets: { label: "Tablets", color: "#00C49F" },
+  moveis: { label: "Móveis", color: "#FFBB28" },
+  fones: { label: "Fones", color: "#FF8042" },
+  impressoras: { label: "Impressoras", color: "#8884D8" },
+  cameras: { label: "Câmeras", color: "#d946ef" },
 }
 
 export default function DashboardRealtime() {
@@ -47,8 +52,8 @@ export default function DashboardRealtime() {
     moveis: 0,
     fones: 0,
     impressoras: 0,
+    cameras: 0,
   })
-
   const navigate = useNavigate()
   const [chartType, setChartType] = useState("bar")
   const [isLoading, setIsLoading] = useState(true)
@@ -61,6 +66,7 @@ export default function DashboardRealtime() {
     moveis: Armchair,
     fones: Headphones,
     impressoras: Printer,
+    cameras: CameraIcon,
   }
 
   const labels = {
@@ -69,9 +75,27 @@ export default function DashboardRealtime() {
     moveis: "Móveis",
     fones: "Fones",
     impressoras: "Impressoras",
+    cameras: "Câmeras",
   }
 
-  // Escuta mudanças no Firebase em tempo real
+  const iconColors = {
+    notebooks: "text-blue-600",
+    tablets: "text-emerald-600",
+    moveis: "text-amber-600",
+    fones: "text-orange-600",
+    impressoras: "text-purple-600",
+    cameras: "text-pink-600",
+  }
+
+  const bgColors = {
+    notebooks: "from-blue-500/10 to-blue-600/5",
+    tablets: "from-emerald-500/10 to-emerald-600/5",
+    moveis: "from-amber-500/10 to-amber-600/5",
+    fones: "from-orange-500/10 to-orange-600/5",
+    impressoras: "from-purple-500/10 to-purple-600/5",
+    cameras: "from-pink-500/10 to-pink-600/5",
+  }
+
   useEffect(() => {
     const db = getDatabase(app)
     const refs = {
@@ -80,6 +104,7 @@ export default function DashboardRealtime() {
       moveis: ref(db, "moveis"),
       fones: ref(db, "fones"),
       impressoras: ref(db, "impressoras"),
+      cameras: ref(db, "cameras"),
     }
 
     const unsubscribes = []
@@ -101,7 +126,6 @@ export default function DashboardRealtime() {
     return () => unsubscribes.forEach((unsub) => unsub())
   }, [])
 
-  // Atualiza histórico a cada 30s baseado nos totais
   useEffect(() => {
     const interval = setInterval(() => {
       setHistorico((prev) => {
@@ -118,7 +142,7 @@ export default function DashboardRealtime() {
 
   const chartData = Object.entries(totais).map(([key, value]) => ({
     name: labels[key],
-    value: value,
+    value,
     fill: chartConfig[key]?.color || COLORS[0],
   }))
 
@@ -139,19 +163,76 @@ export default function DashboardRealtime() {
     setTimeout(() => setIsLoading(false), 1000)
   }
 
+  const SkeletonCard = ({ className = "" }) => (
+    <Card className={`animate-pulse ${className}`}>
+      <CardHeader className="space-y-0 pb-3">
+        <div className="flex items-center justify-between">
+          <div className="h-4 bg-gray-200 rounded w-20"></div>
+          <div className="h-8 w-8 bg-gray-200 rounded-lg"></div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="h-8 bg-gray-200 rounded w-16"></div>
+          <div className="h-3 bg-gray-200 rounded w-24"></div>
+          <div className="h-1.5 bg-gray-200 rounded-full w-full"></div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-7xl mx-auto p-6">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center space-y-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
+        <div className="max-w-7xl mx-auto p-6 space-y-8">
+          {/* Header Skeleton */}
+          <Card className="animate-pulse">
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div className="space-y-3">
+                  <div className="h-8 bg-gray-200 rounded w-80"></div>
+                  <div className="h-4 bg-gray-200 rounded w-60"></div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="h-9 bg-gray-200 rounded w-24"></div>
+                  <div className="h-9 bg-gray-200 rounded w-24"></div>
+                  <div className="h-9 bg-gray-200 rounded w-20"></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Metrics Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-6">
+            <SkeletonCard className="col-span-1" />
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <SkeletonCard key={idx} />
+            ))}
+          </div>
+
+          {/* Loading Animation */}
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center space-y-6">
               <div className="relative">
-                <div className="w-16 h-16 mx-auto rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
-                <Database className="w-6 h-6 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" />
+                <div className="w-20 h-20 mx-auto rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Database className="w-8 h-8 text-blue-600 animate-pulse" />
+                </div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold">Conectando ao Firebase</h3>
-                <p className="text-muted-foreground">Carregando dados em tempo real...</p>
+                <h3 className="text-2xl font-bold text-gray-900">Conectando ao Firebase</h3>
+                <p className="text-gray-600">Carregando dados em tempo real...</p>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -161,107 +242,137 @@ export default function DashboardRealtime() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* Header com gradiente sutil */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-2xl"></div>
-          <div className="relative bg-card/50 backdrop-blur-sm border rounded-2xl p-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Activity className="h-6 w-6 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
+        {/* Enhanced Header */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/5 to-blue-600/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+          <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
+            <CardContent className="p-6 sm:p-8">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+                        <Activity className="h-7 w-7 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                        Dashboard em Tempo Real
+                      </h1>
+                      <p className="text-gray-600 text-lg">Monitoramento de equipamentos em tempo real</p>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      Dashboard em Tempo Real
-                    </h1>
-                    <p className="text-muted-foreground">Monitoramento de equipamentos em tempo real</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <Wifi className="h-4 w-4" />
+                    Ao vivo
+                  </Badge>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefresh}
+                      className="hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all duration-300 group bg-transparent"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                      Atualizar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExport}
+                      className="hover:bg-green-50 hover:border-green-200 hover:text-green-700 transition-all duration-300 bg-transparent"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/home")}
+                      className="hover:bg-gray-50 hover:border-gray-200 transition-all duration-300"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Voltar
+                    </Button>
                   </div>
                 </div>
               </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border-green-200 text-green-700 dark:bg-green-950 dark:border-green-800 dark:text-green-300"
-                >
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  Ao vivo
-                </Badge>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="hover:bg-primary/5 bg-transparent"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Atualizar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleExport}
-                    className="hover:bg-primary/5 bg-transparent"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/home")} className="hover:bg-primary/5">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Voltar
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Métricas Principais com animações */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-          {/* Card Total Geral - Destaque especial */}
-          <Card className="col-span-1 sm:col-span-2 lg:col-span-1 xl:col-span-1 relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-primary/20">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Geral</CardTitle>
-              <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                <TrendingUp className="h-4 w-4 text-primary" />
+        {/* Enhanced Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 sm:gap-6">
+          {/* Total Card - Special Design */}
+          <Card className="col-span-1 sm:col-span-2 lg:col-span-1 relative overflow-hidden group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-blue-600 to-purple-600 border-0 text-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+              <CardTitle className="text-sm font-medium text-blue-100">Total Geral</CardTitle>
+              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
+                <TrendingUp className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-3xl font-bold text-primary mb-1">{totalItems}</div>
-              <p className="text-xs text-muted-foreground">equipamentos registrados</p>
+            <CardContent className="relative z-10">
+              <div className="text-4xl font-bold text-white mb-2">{totalItems}</div>
+              <p className="text-blue-100 text-sm">Equipamentos registrados</p>
+              <div className="mt-4 flex items-center gap-2">
+                <Signal className="h-4 w-4 text-green-300" />
+                <span className="text-xs text-blue-100">Sistema ativo</span>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Cards individuais com cores temáticas */}
+          {/* Individual Category Cards */}
           {Object.entries(totais).map(([key, value], index) => {
             const Icon = icons[key]
             const percentage = ((value / totalItems) * 100 || 0).toFixed(1)
-
             return (
               <Card
                 key={key}
-                className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="relative overflow-hidden group hover:shadow-xl transition-all duration-500 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-0"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{labels[key]}</CardTitle>
-                  <div className="p-2 bg-muted/50 rounded-lg group-hover:bg-muted transition-colors">
-                    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${bgColors[key]} opacity-0 group-hover:opacity-100 transition-all duration-500`}
+                ></div>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gray-100/50 to-transparent rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-700"></div>
+
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                  <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors">
+                    {labels[key]}
+                  </CardTitle>
+                  <div className="p-2.5 bg-gray-50 rounded-xl group-hover:bg-white group-hover:shadow-lg transition-all duration-300">
+                    <Icon
+                      className={`h-5 w-5 ${iconColors[key]} group-hover:scale-110 transition-transform duration-300`}
+                    />
                   </div>
                 </CardHeader>
-                <CardContent className="relative">
-                  <div className="text-2xl font-bold mb-1">{value}</div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">{percentage}% do total</p>
-                    <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
+
+                <CardContent className="relative z-10">
+                  <div className="text-3xl font-bold text-gray-900 mb-2 group-hover:scale-105 transition-transform duration-300">
+                    {value}
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-500">{percentage}% do total</p>
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 bg-white/50">
+                        {value > 0 ? "Ativo" : "Vazio"}
+                      </Badge>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-full bg-primary/60 rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${percentage}%` }}
+                        className={`h-full bg-gradient-to-r ${bgColors[key].replace("/10", "").replace("/5", "")} rounded-full transition-all duration-1000 ease-out`}
+                        style={{ width: `${Math.max(percentage, 5)}%` }}
                       ></div>
                     </div>
                   </div>
@@ -271,56 +382,69 @@ export default function DashboardRealtime() {
           })}
         </div>
 
-        {/* Gráficos com melhor design */}
-        <Tabs defaultValue="charts" className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-3 bg-muted/50">
-              <TabsTrigger value="charts" className="flex items-center gap-2">
+        {/* Enhanced Tabs Section */}
+        <Tabs defaultValue="charts" className="space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <TabsList className="grid w-full sm:w-auto grid-cols-3 bg-white/80 backdrop-blur-sm border-0 shadow-lg p-1">
+              <TabsTrigger
+                value="charts"
+                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all duration-300"
+              >
                 <BarChart3 className="h-4 w-4" />
-                Gráficos
+                <span className="hidden sm:inline">Gráficos</span>
               </TabsTrigger>
-              <TabsTrigger value="trends" className="flex items-center gap-2">
+              <TabsTrigger
+                value="trends"
+                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all duration-300"
+              >
                 <TrendingUp className="h-4 w-4" />
-                Tendências
+                <span className="hidden sm:inline">Tendências</span>
               </TabsTrigger>
-              <TabsTrigger value="details" className="flex items-center gap-2">
+              <TabsTrigger
+                value="details"
+                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all duration-300"
+              >
                 <Database className="h-4 w-4" />
-                Detalhes
+                <span className="hidden sm:inline">Detalhes</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="charts" className="space-y-6">
-            <Card className="overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent">
+            <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-50/80 to-purple-50/80 border-b border-gray-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-primary" />
+                  <div className="space-y-2">
+                    <CardTitle className="flex items-center gap-3 text-2xl">
+                      <div className="p-2 bg-blue-600 rounded-lg">
+                        <Zap className="h-5 w-5 text-white" />
+                      </div>
                       Visualização de Dados
                     </CardTitle>
-                    <CardDescription>Escolha o tipo de gráfico para visualizar os dados</CardDescription>
+                    <CardDescription className="text-base">
+                      Escolha o tipo de gráfico para visualizar os dados de forma interativa
+                    </CardDescription>
                   </div>
                   <Select value={chartType} onValueChange={setChartType}>
-                    <SelectTrigger className="w-[200px] bg-background/50">
+                    <SelectTrigger className="w-[220px] bg-white/80 backdrop-blur-sm border-gray-200 hover:border-blue-300 transition-colors">
                       <SelectValue placeholder="Tipo de gráfico" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white/95 backdrop-blur-sm">
                       <SelectItem value="bar">
-                        <div className="flex items-center gap-2">
-                          <BarChart3 className="h-4 w-4" />
+                        <div className="flex items-center gap-3">
+                          <BarChart3 className="h-4 w-4 text-blue-600" />
                           Gráfico de Barras
                         </div>
                       </SelectItem>
                       <SelectItem value="pie">
-                        <div className="flex items-center gap-2">
-                          <PieChartIcon className="h-4 w-4" />
+                        <div className="flex items-center gap-3">
+                          <PieChartIcon className="h-4 w-4 text-green-600" />
                           Gráfico de Pizza
                         </div>
                       </SelectItem>
                       <SelectItem value="area">
-                        <div className="flex items-center gap-2">
-                          <Activity className="h-4 w-4" />
+                        <div className="flex items-center gap-3">
+                          <Activity className="h-4 w-4 text-purple-600" />
                           Gráfico de Área
                         </div>
                       </SelectItem>
@@ -328,14 +452,14 @@ export default function DashboardRealtime() {
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                <ChartContainer config={chartConfig} className="min-h-[400px]">
+              <CardContent className="p-8">
+                <ChartContainer config={chartConfig} className="min-h-[450px]">
                   {chartType === "bar" && (
                     <BarChart data={chartData}>
                       <XAxis dataKey="name" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="value" fill="var(--color-notebooks)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="var(--color-notebooks)" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   )}
                   {chartType === "pie" && (
@@ -346,7 +470,7 @@ export default function DashboardRealtime() {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={120}
+                        outerRadius={140}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -376,17 +500,21 @@ export default function DashboardRealtime() {
           </TabsContent>
 
           <TabsContent value="trends" className="space-y-6">
-            <Card className="overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent">
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+            <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-green-50/80 to-blue-50/80 border-b border-gray-100">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-green-600 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
                   Análise de Tendências
                 </CardTitle>
-                <CardDescription>Histórico de mudanças nos últimos períodos</CardDescription>
+                <CardDescription className="text-base">
+                  Histórico de mudanças nos últimos períodos coletados automaticamente
+                </CardDescription>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-8">
                 {historico.length > 0 ? (
-                  <ChartContainer config={chartConfig} className="min-h-[300px]">
+                  <ChartContainer config={chartConfig} className="min-h-[350px]">
                     <AreaChart data={historico}>
                       <XAxis dataKey="time" />
                       <YAxis />
@@ -408,14 +536,18 @@ export default function DashboardRealtime() {
                     </AreaChart>
                   </ChartContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-muted-foreground">
-                    <div className="text-center space-y-3">
-                      <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto">
-                        <Calendar className="h-8 w-8" />
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center space-y-4">
+                      <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl w-fit mx-auto">
+                        <Calendar className="h-12 w-12 text-blue-600" />
                       </div>
-                      <div>
-                        <p className="font-medium">Aguardando dados históricos</p>
-                        <p className="text-sm">Os dados serão coletados a cada 30 segundos</p>
+                      <div className="space-y-2">
+                        <p className="text-xl font-semibold text-gray-900">Aguardando dados históricos</p>
+                        <p className="text-gray-600">Os dados serão coletados automaticamente a cada 30 segundos</p>
+                        <div className="flex items-center justify-center gap-2 mt-4">
+                          <Eye className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm text-blue-600 font-medium">Monitoramento ativo</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -426,61 +558,66 @@ export default function DashboardRealtime() {
 
           <TabsContent value="details" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-950/20">
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-blue-600" />
+              <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-blue-50/80 to-cyan-50/80 border-b border-gray-100">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="p-2 bg-blue-600 rounded-lg">
+                      <Database className="h-5 w-5 text-white" />
+                    </div>
                     Informações do Sistema
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Última atualização:</span>
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-xl border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <span className="font-medium text-gray-700">Última atualização:</span>
                     </div>
-                    <span className="text-sm font-medium">{lastUpdate.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-gray-900 bg-white px-3 py-1 rounded-lg">
+                      {lastUpdate.toLocaleString()}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Status da conexão:</span>
-                    <Badge
-                      variant="default"
-                      className="bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800"
-                    >
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-green-50/30 rounded-xl border border-gray-100">
+                    <span className="font-medium text-gray-700">Status da conexão:</span>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200 transition-colors">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                       Conectado
                     </Badge>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Total de categorias:</span>
-                    <span className="text-sm font-medium">{Object.keys(totais).length}</span>
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-purple-50/30 rounded-xl border border-gray-100">
+                    <span className="font-medium text-gray-700">Total de categorias:</span>
+                    <span className="text-lg font-bold text-purple-600">{Object.keys(totais).length}</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-purple-50 to-transparent dark:from-purple-950/20">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-purple-600" />
+              <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-purple-50/80 to-pink-50/80 border-b border-gray-100">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="p-2 bg-purple-600 rounded-lg">
+                      <BarChart3 className="h-5 w-5 text-white" />
+                    </div>
                     Estatísticas Rápidas
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Categoria com mais itens:</span>
-                    <Badge variant="outline" className="font-medium">
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-green-50/30 rounded-xl border border-gray-100">
+                    <span className="font-medium text-gray-700">Categoria com mais itens:</span>
+                    <Badge variant="outline" className="font-semibold bg-green-50 text-green-700 border-green-200">
                       {labels[Object.entries(totais).reduce((a, b) => (totais[a[0]] > totais[b[0]] ? a : b))[0]]}
                     </Badge>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Categoria com menos itens:</span>
-                    <Badge variant="outline" className="font-medium">
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-orange-50/30 rounded-xl border border-gray-100">
+                    <span className="font-medium text-gray-700">Categoria com menos itens:</span>
+                    <Badge variant="outline" className="font-semibold bg-orange-50 text-orange-700 border-orange-200">
                       {labels[Object.entries(totais).reduce((a, b) => (totais[a[0]] < totais[b[0]] ? a : b))[0]]}
                     </Badge>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Média por categoria:</span>
-                    <span className="text-sm font-medium">{(totalItems / Object.keys(totais).length).toFixed(1)}</span>
+                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-xl border border-gray-100">
+                    <span className="font-medium text-gray-700">Média por categoria:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {(totalItems / Object.keys(totais).length).toFixed(1)}
+                    </span>
                   </div>
                 </CardContent>
               </Card>

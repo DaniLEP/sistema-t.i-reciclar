@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { getDatabase, ref, onValue } from "firebase/database"
-import { app } from "../../../firebase" // ajuste o caminho para seu arquivo firebase
+import { app } from "../../../firebase"
 import { SearchBar } from "../../components/ui/search-bar"
 import { BreadcrumbNav } from "../../components/ui/breadcrumb-nav"
 import { EquipmentCard } from "../../components/ui/equipment-card"
@@ -75,6 +75,15 @@ const opcoesCadastro = [
   },
 ]
 
+const categoriaMap = {
+  notebook: "notebooks",
+  fone: "fones",
+  tablet: "tablets",
+  impressora: "impressoras",
+  camera: "cameras",
+  mobiliario: "moveis",
+}
+
 export default function HomeViews() {
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState("grid")
@@ -83,9 +92,7 @@ export default function HomeViews() {
   const db = getDatabase(app)
 
   useEffect(() => {
-    const categorias = ["notebooks", "fones", "tablets", "impressoras"]
-
-    categorias.forEach((categoria) => {
+    Object.values(categoriaMap).forEach((categoria) => {
       const refDb = ref(db, categoria)
 
       onValue(refDb, (snapshot) => {
@@ -132,6 +139,21 @@ export default function HomeViews() {
           <SearchBar onSearch={setSearchQuery} placeholder="Search equipment types..." />
         </header>
 
+        <div className="max-w-4xl mx-auto mt-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Object.entries(quantidades).map(([categoria, count]) => (
+              <div
+                key={categoria}
+                className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+              >
+                <div className="text-2xl font-bold text-white mb-1">{count}</div>
+                <div className="text-white/70 text-sm capitalize">{categoria}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <br />
+
         <div className="max-w-7xl mx-auto mb-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
             <div className="flex items-center gap-4">
@@ -176,7 +198,7 @@ export default function HomeViews() {
                   key={opcao.id}
                   {...opcao}
                   onClick={() => navigate(opcao.rota)}
-                  quantidade={quantidades[opcao.id] ?? 0}
+                  quantidade={quantidades[categoriaMap[opcao.id]] ?? 0}
                 />
               ))}
             </div>
@@ -197,20 +219,6 @@ export default function HomeViews() {
             </div>
           )}
         </main>
-
-        <div className="max-w-4xl mx-auto mt-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(quantidades).map(([categoria, count]) => (
-              <div
-                key={categoria}
-                className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-              >
-                <div className="text-2xl font-bold text-white mb-1">{count}</div>
-                <div className="text-white/70 text-sm capitalize">{categoria}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )
