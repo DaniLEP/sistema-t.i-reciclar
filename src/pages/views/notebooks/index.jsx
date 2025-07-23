@@ -173,7 +173,7 @@ export default function VisualizarNotebooks() {
 
   const alterarStatus = (novo) => {
     if (!selecionado) return
-    if (["Emprestado", "Quebrado", "Manutencao", "Controlador"].includes(novo)) {
+    if (["Emprestado", "Quebrado", "Manutencao", "Controlador", "Colaborador"].includes(novo)) {
       setStatusNovo(novo)
       setModalMotivo(true)
     } else {
@@ -647,7 +647,7 @@ export default function VisualizarNotebooks() {
       <AnimatePresence>
         {modalAberto && selecionado && (
           <Dialog open={modalAberto} onOpenChange={setModalAberto}>
-            <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden p-0 rounded-2xl shadow-2xl border-0">
+          <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto p-0 rounded-2xl shadow-2xl border-0">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}

@@ -347,3 +347,102 @@ export default function CadastroNotebook() {
     </div>
   )
 }
+
+
+// "use client"
+
+// import { useState } from "react"
+// import * as XLSX from "xlsx"
+// import { getDatabase, ref, push } from "firebase/database"
+// import { app } from "../../../../firebase"
+// import { toast } from "react-toastify"
+// import { Loader2, FileUp } from "lucide-react"
+
+// export default function ImportarPlanilhaNotebook() {
+//   const [loading, setLoading] = useState(false)
+
+//   const handleFileUpload = async (e) => {
+//     const file = e.target.files[0]
+//     if (!file) return
+
+//     setLoading(true)
+//     const reader = new FileReader()
+
+//     reader.onload = async (event) => {
+//       try {
+//         const data = new Uint8Array(event.target.result)
+//         const workbook = XLSX.read(data, { type: "array" })
+//         const sheet = workbook.Sheets[workbook.SheetNames[0]]
+//         const rows = XLSX.utils.sheet_to_json(sheet)
+
+//         const db = getDatabase(app)
+//         const notebookRef = ref(db, "notebooks")
+
+//         let successCount = 0
+//         let errorCount = 0
+
+//         for (const row of rows) {
+//           const formatted = {
+//             patrimonio: row.patrimonio || "",
+//             notebook: row.notebook || "",
+//             marca: row.marca || "",
+//             modelo: row.modelo || "",
+//             status: row.status || "", // <- agora incluído
+//             projeto: row.projeto || "",
+//             local: row.local || "",
+//             numeroSerie: row.numeroSerie || "",
+//             notaFiscal: row["notaFiscal "] || "", // <- corrigido com espaço
+//             obs: row.obs || "",
+//             fotoBase64: "",
+//             dataCadastro: row.dataCadastro || "",
+//             NCM: row.NCM || "",
+//             vrbem: row.vrbem || "",
+//             parceiro: row.parceiro || "",
+//             projetoEditalConvenio: row.projetoEditalConvenio || "",
+//             ano: row.ano || "",
+//           }
+
+//           try {
+//             await push(notebookRef, formatted)
+//             successCount++
+//           } catch (error) {
+//             console.error("Erro ao enviar:", error)
+//             errorCount++
+//           }
+//         }
+
+//         toast.success(`Importação finalizada: ${successCount} inseridos, ${errorCount} falharam.`)
+//       } catch (err) {
+//         console.error("Erro geral na leitura:", err)
+//         toast.error("Erro ao processar a planilha.")
+//       } finally {
+//         setLoading(false)
+//       }
+//     }
+
+//     reader.readAsArrayBuffer(file)
+//   }
+
+//   return (
+//     <div className="flex flex-col items-start gap-4 p-6 bg-white border rounded-xl shadow-sm w-full max-w-xl mx-auto mt-10">
+//       <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+//         <FileUp className="w-5 h-5" /> Importar Planilha de Notebooks
+//       </h2>
+
+//       <input
+//         type="file"
+//         accept=".xlsx, .xls"
+//         onChange={handleFileUpload}
+//         disabled={loading}
+//         className="border rounded-lg px-4 py-2 text-sm w-full"
+//       />
+
+//       {loading && (
+//         <div className="flex items-center gap-2 text-sm text-gray-600">
+//           <Loader2 className="animate-spin w-4 h-4" />
+//           Enviando dados...
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
