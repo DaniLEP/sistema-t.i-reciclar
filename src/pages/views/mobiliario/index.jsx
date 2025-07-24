@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { getDatabase, ref, onValue, update } from "firebase/database"
 import { app } from "../../../../firebase"
@@ -34,25 +32,15 @@ export default function VisualizarMobiliario() {
     const unsubscribe = onValue(refMoveis, (snapshot) => {
       const data = snapshot.val()
       if (data) {
-        const arrayMoveis = Object.entries(data).map(([id, val]) => ({
-          id,
-          ...val,
-        }))
-        setMoveis(arrayMoveis)
-      } else {
-        setMoveis([])
-      }
-      setIsLoading(false)
+        const arrayMoveis = Object.entries(data).map(([id, val]) => ({ id,...val, })); setMoveis(arrayMoveis)
+      } else {setMoveis([])}
+      setIsLoading(false);
     })
     return () => unsubscribe()
   }, [])
 
   useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === "Escape" && isModalOpen) {
-        closeModal()
-      }
-    }
+    function handleKeyDown(e) {if (e.key === "Escape" && isModalOpen) { closeModal()}}
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isModalOpen])
@@ -70,12 +58,8 @@ export default function VisualizarMobiliario() {
   })
 
   // Estatísticas
-  const stats = {
-    total: moveis.length,
-    comFoto: moveis.filter((item) => item.fotoBase64).length,
-    projetos: [...new Set(moveis.map((item) => item.projeto).filter(Boolean))].length,
-    ambientes: [...new Set(moveis.map((item) => item.ambienteAtual).filter(Boolean))].length,
-  }
+  const stats = { total: moveis.length, comFoto: moveis.filter((item) => item.fotoBase64).length, projetos: [...new Set(moveis.map((item) => item.projeto).filter(Boolean))].length,
+    ambientes: [...new Set(moveis.map((item) => item.ambienteAtual).filter(Boolean))].length,}
 
   const exportToExcel = () => {
     // Criar uma cópia dos dados filtrados, removendo campos que não quer exportar (ex: fotoBase64)
@@ -83,51 +67,25 @@ export default function VisualizarMobiliario() {
     const worksheet = XLSX.utils.json_to_sheet(dataToExport)
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Mobiliario")
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    })
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array", })
     // Criar Blob e salvar arquivo com file-saver
-    const data = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    })
+    const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", })
     saveAs(data, "Patrimonio-2025.xlsx")
     toast.success("Arquivo Excel exportado com sucesso!")
   }
 
-  const openModal = (item) => {
-    setSelectedItem(item)
-    setEditData(item)
-    setIsEditing(false)
-    setIsModalOpen(true)
-  }
-
-  const closeModal = () => {
-    setSelectedItem(null)
-    setIsModalOpen(false)
-    setIsEditing(false)
-  }
-
-  const handleEditClick = () => {
-    setIsEditing(true)
-  }
-
-  const handleChange = (e) => {
-    setEditData({ ...editData, [e.target.name]: e.target.value })
-  }
-
+  const openModal = (item) => {setSelectedItem(item); setEditData(item); setIsEditing(false); setIsModalOpen(true)}
+  const closeModal = () => {setSelectedItem(null); setIsModalOpen(false); setIsEditing(false)}
+  const handleEditClick = () => {setIsEditing(true)}
+  const handleChange = (e) => {setEditData({ ...editData, [e.target.name]: e.target.value }) }
   const handleSave = async () => {
     if (!selectedItem?.id) return
     const db = getDatabase(app)
     try {
       await update(ref(db, `moveis/${selectedItem.id}`), editData)
-      setMoveis((old) => old.map((m) => (m.id === selectedItem.id ? { ...m, ...editData } : m)))
-      setSelectedItem({ ...selectedItem, ...editData })
-      setIsEditing(false)
+      setMoveis((old) => old.map((m) => (m.id === selectedItem.id ? { ...m, ...editData } : m))); setSelectedItem({ ...selectedItem, ...editData }); setIsEditing(false)
       toast.success("Dados salvos com sucesso!")
-    } catch (error) {
-      toast.error("Erro ao salvar: " + error.message)
-    }
+    } catch (error) {toast.error("Erro ao salvar: " + error.message)}
   }
 
   if (isLoading) {

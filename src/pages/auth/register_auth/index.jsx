@@ -371,7 +371,7 @@ export default function RegistroUser() {
                         <Button
                           type="submit"
                           disabled={!canSubmit() || isLoading}
-                          className={`px-8 h-12 text-white ${canSubmit() && !isLoading ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"}`}
+                          className={`px-8 h-12 text-white rounded-full ${canSubmit() && !isLoading ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300 cursor-not-allowed"}`}
                         >
                           {isLoading ? (
                             <>
