@@ -12,48 +12,69 @@ export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([]);
   const ws = useRef(null);
   const isWsOpen = useRef(false);
+  const impressorasRef = useRef([]);
+  const statusCache = useRef({}); // Guarda status atual para evitar atualizações desnecessárias
 
-  function atualizarStatus(ip, status) {
-    setImpressoras((lista) =>
-      lista.map((imp) => (imp.ip === ip ? { ...imp, conexao: status } : imp))
-    );
-  }
-
-  // Leitura das impressoras do Firebase
   useEffect(() => {
     const db = getDatabase(app);
-    const impressorasRef = ref(db, "impressoras");
+    const impressorasRefDB = ref(db, "impressoras");
 
-    const unsubscribe = onValue(impressorasRef, (snapshot) => {
+    const unsubscribe = onValue(impressorasRefDB, (snapshot) => {
       const data = snapshot.val();
       if (!data) {
         setImpressoras([]);
+        statusCache.current = {};
         return;
       }
+
       const lista = Object.entries(data).map(([id, imp]) => ({
         id,
         ...imp,
         conexao: "indefinido",
+        status: "indefinido",
       }));
+
       setImpressoras(lista);
+      statusCache.current = {}; // Resetar cache de status quando a lista muda
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Criar e gerenciar conexão WebSocket uma vez só
   useEffect(() => {
-    fetch("https://sistema-t-i-reciclar.onrender.com/")
+    impressorasRef.current = impressoras;
+  }, [impressoras]);
+
+  // Atualiza status apenas se for diferente do atual para evitar flickering
+  function atualizarStatus(ip, status) {
+    if (statusCache.current[ip] === status) return; // status igual, não atualiza
+    statusCache.current[ip] = status;
+
+    setImpressoras((lista) =>
+      lista.map((imp) =>
+        imp.ip === ip ? { ...imp, conexao: status, status: status } : imp
+      )
+    );
+  }
+
+  // Criar e gerenciar WebSocket
+  useEffect(() => {
+    // Acordar servidor e abrir WS
+    fetch("http://192.168.1.146:4000")
       .then(() => {
-        ws.current = new WebSocket("wss://sistema-t-i-reciclar.onrender.com");
+        ws.current = new WebSocket("ws://192.168.1.146:4000");
 
         ws.current.onopen = () => {
           console.log("WS conectado");
           isWsOpen.current = true;
 
-          // Enviar status das impressoras atuais ao abrir conexão
-          impressoras.forEach((imp) => {
-            if (imp.ip && ws.current.readyState === WebSocket.OPEN) {
+          // Enviar IPs só dos que não têm status definido (ou indefinido)
+          impressorasRef.current.forEach((imp) => {
+            if (
+              imp.ip &&
+              (imp.conexao === "indefinido" || !statusCache.current[imp.ip]) &&
+              ws.current.readyState === WebSocket.OPEN
+            ) {
               ws.current.send(JSON.stringify({ ip: imp.ip }));
             }
           });
@@ -80,7 +101,7 @@ export default function VisualizacaoImpressoras() {
         };
       })
       .catch((err) => {
-        console.error("Erro ao acordar servidor Render:", err);
+        console.error("Erro ao acordar servidor:", err);
       });
 
     return () => {
@@ -88,13 +109,16 @@ export default function VisualizacaoImpressoras() {
     };
   }, []);
 
-  // Enviar atualizações quando a lista de impressoras mudar e o WS estiver aberto
+  // Reenvia IPs para atualizar status somente se WS estiver aberto e IP ainda não for conhecido
   useEffect(() => {
-    if (!isWsOpen.current) return;
-    if (ws.current.readyState !== WebSocket.OPEN) return;
+    if (!isWsOpen.current || !ws.current || ws.current.readyState !== WebSocket.OPEN)
+      return;
 
     impressoras.forEach((imp) => {
-      if (imp.ip) {
+      if (
+        imp.ip &&
+        (imp.conexao === "indefinido" || !statusCache.current[imp.ip])
+      ) {
         ws.current.send(JSON.stringify({ ip: imp.ip }));
       }
     });
