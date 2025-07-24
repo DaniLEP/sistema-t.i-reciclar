@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
-import { app } from "./firebase"; // ajuste o caminho
+import { app } from "../../../../firebasegit in"; // ajuste o caminho
 
 const CONEXAO_CONFIG = {
   online: "bg-green-500",
