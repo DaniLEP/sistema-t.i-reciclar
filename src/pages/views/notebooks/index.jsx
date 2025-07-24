@@ -315,7 +315,7 @@ export default function VisualizarNotebooks() {
               <Table>
                 <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <TableRow>
-                    {[ "Patrimônio", "Notebook", "Marca", "Modelo", "Local", "Projeto", "Observações", "Status", "Ações",
+                    {[ "Patrimônio", "Notebook", "Marca", "Modelo", "Local", "Projeto",  "Data de Cadastro", "Observações", "Status", "Ações",
                     ].map((h) => (<TableHead key={h} className="text-center font-semibold text-gray-700 whitespace-nowrap">{h}</TableHead>
                     ))}
                   </TableRow>
@@ -331,6 +331,7 @@ export default function VisualizarNotebooks() {
                         <TableCell className="text-center">{item.modelo || "-"}</TableCell>
                         <TableCell className="text-center">{item.local || "-"}</TableCell>
                         <TableCell className="text-center">{item.projeto || "-"}</TableCell>
+                        <TableCell className="text-center">{formatDate(item.dataCadastro || "-")}</TableCell>
                         <TableCell className="text-center max-w-[200px] truncate" title={item.obs || ""}>{item.obs || "-"}</TableCell>
                         <TableCell className="text-center">
                           <Badge className={`text-xs font-medium border ${getStatusColor(item.status)}`} title={item.motivo || ""}>{item.status}</Badge>
