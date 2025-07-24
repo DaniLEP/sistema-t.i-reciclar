@@ -11,6 +11,7 @@ const CONEXAO_CONFIG = {
 export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([]);
   const ws = useRef(null);
+  const isWsOpen = useRef(false);
 
   function atualizarStatus(ip, status) {
     setImpressoras((lista) =>
@@ -18,6 +19,7 @@ export default function VisualizacaoImpressoras() {
     );
   }
 
+  // Leitura das impressoras do Firebase
   useEffect(() => {
     const db = getDatabase(app);
     const impressorasRef = ref(db, "impressoras");
@@ -39,16 +41,19 @@ export default function VisualizacaoImpressoras() {
     return () => unsubscribe();
   }, []);
 
+  // Criar e gerenciar conexão WebSocket uma vez só
   useEffect(() => {
-    if (impressoras.length === 0) return;
-
     fetch("https://sistema-t-i-reciclar.onrender.com/")
       .then(() => {
         ws.current = new WebSocket("wss://sistema-t-i-reciclar.onrender.com");
 
         ws.current.onopen = () => {
+          console.log("WS conectado");
+          isWsOpen.current = true;
+
+          // Enviar status das impressoras atuais ao abrir conexão
           impressoras.forEach((imp) => {
-            if (imp.ip) {
+            if (imp.ip && ws.current.readyState === WebSocket.OPEN) {
               ws.current.send(JSON.stringify({ ip: imp.ip }));
             }
           });
@@ -71,6 +76,7 @@ export default function VisualizacaoImpressoras() {
 
         ws.current.onclose = () => {
           console.log("WebSocket fechado");
+          isWsOpen.current = false;
         };
       })
       .catch((err) => {
@@ -80,6 +86,18 @@ export default function VisualizacaoImpressoras() {
     return () => {
       if (ws.current) ws.current.close();
     };
+  }, []);
+
+  // Enviar atualizações quando a lista de impressoras mudar e o WS estiver aberto
+  useEffect(() => {
+    if (!isWsOpen.current) return;
+    if (ws.current.readyState !== WebSocket.OPEN) return;
+
+    impressoras.forEach((imp) => {
+      if (imp.ip) {
+        ws.current.send(JSON.stringify({ ip: imp.ip }));
+      }
+    });
   }, [impressoras]);
 
   return (
