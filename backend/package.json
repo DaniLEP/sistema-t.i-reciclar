@@ -1,76 +1,14 @@
 {
-  "name": "app-sistema-ti",
+  "name": "backend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
     "start": "node server.js"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.4",
-    "@radix-ui/react-avatar": "^1.1.10",
-    "@radix-ui/react-dialog": "^1.1.14",
-    "@radix-ui/react-label": "^2.1.7",
-    "@radix-ui/react-progress": "^1.1.7",
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-tabs": "^1.1.12",
-    "@react-oauth/google": "^0.12.2",
-    "@tailwindcss/vite": "^4.1.7",
-    "axios": "^1.11.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cors": "^2.8.5",
-    "dayjs": "^1.11.13",
     "express": "^5.1.0",
-    "file-saver": "^2.0.5",
-    "firebase": "^11.8.1",
-    "firebase-admin": "^13.4.0",
-    "framer-motion": "^12.16.0",
-    "lucide-react": "^0.511.0",
-    "motion": "^12.23.5",
-    "ping": "^0.4.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-hot-toast": "^2.5.2",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^7.6.3",
-    "react-toastify": "^11.0.5",
-    "recharts": "^2.15.4",
-    "tailwind-merge": "^3.3.0",
-    "tailwindcss": "^4.1.7",
-    "tcp-ping": "^0.1.1",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.25.0",
-    "@types/node": "^22.15.21",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
-    "eslint": "^9.25.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0",
-    "tw-animate-css": "^1.3.0",
-    "vite": "^6.3.5"
-  },
-  "description": "",
-  "main": "eslint.config.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DaniLEP/sistema-t.i-reciclar.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/DaniLEP/sistema-t.i-reciclar/issues"
-  },
-  "homepage": "https://github.com/DaniLEP/sistema-t.i-reciclar#readme"
+    "cors": "^2.8.5",
+    "node-fetch": "^3.x"
+  }
 }

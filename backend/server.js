@@ -1,10 +1,10 @@
-// server.js
 import express from "express"
 import cors from "cors"
 import fetch from "node-fetch"
 
 const app = express()
-const PORT = 4000
+// Use porta do ambiente ou 4000 como fallback
+const PORT = process.env.PORT || 4000
 
 app.use(cors())
 app.use(express.json())

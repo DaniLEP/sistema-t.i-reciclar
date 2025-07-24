@@ -12,17 +12,18 @@ const CONEXAO_CONFIG = {
 export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([])
 
-  async function checarConexaoBackend(ip) {
-    if (!ip) return "Indefinido"
-    try {
-      const res = await fetch(`http://localhost:4000/check-impressora?ip=${ip}`)
-      const data = await res.json()
-      return data.status === "online" ? "Online" : "Offline"
-    } catch (error) {
-      console.error("Erro ao checar conexão:", error)
-      return "Offline"
-    }
+ async function checarConexaoBackend(ip) {
+  if (!ip) return "Indefinido"
+  try {
+    const res = await fetch(`https://sistema-t-i-reciclar.onrender.com/check-impressora?ip=${ip}`)
+    const data = await res.json()
+    return data.status === "online" ? "Online" : "Offline"
+  } catch (error) {
+    console.error("Erro ao checar conexão:", error)
+    return "Offline"
   }
+}
+
 
   useEffect(() => {
     const db = getDatabase(app)
