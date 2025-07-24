@@ -1,71 +1,77 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { getDatabase, ref, onValue } from "firebase/database"
-import { app } from "../../../../firebase" // ajuste o caminho conforme sua estrutura
-import { toast } from "react-toastify"
+import { app } from "../../../../firebase"
 
 const CONEXAO_CONFIG = {
-  Online: "bg-green-500",
-  Offline: "bg-red-500",
-  Indefinido: "bg-gray-400",
+  online: "bg-green-500",
+  offline: "bg-red-500",
+  indefinido: "bg-gray-400",
 }
 
 export default function VisualizacaoImpressoras() {
   const [impressoras, setImpressoras] = useState([])
+  const ws = useRef(null)
 
- async function checarConexaoBackend(ip) {
-  if (!ip) return "Indefinido"
-  try {
-    const res = await fetch(`https://sistema-t-i-reciclar.onrender.com/check-impressora?ip=${ip}`)
-    const data = await res.json()
-    return data.status === "online" ? "Online" : "Offline"
-  } catch (error) {
-    console.error("Erro ao checar conexão:", error)
-    return "Offline"
+  function atualizarStatus(ip, status) {
+    setImpressoras((lista) =>
+      lista.map((imp) =>
+        imp.ip === ip ? { ...imp, conexao: status } : imp
+      )
+    )
   }
-}
-
 
   useEffect(() => {
     const db = getDatabase(app)
     const impressorasRef = ref(db, "impressoras")
 
-    const unsubscribe = onValue(impressorasRef, async (snapshot) => {
+    const unsubscribe = onValue(impressorasRef, (snapshot) => {
       const data = snapshot.val()
-
       if (!data) {
         setImpressoras([])
         return
       }
-
-      const lista = await Promise.all(
-        Object.entries(data).map(async ([id, imp]) => {
-          const conexao = await checarConexaoBackend(imp.ip)
-          return { id, ...imp, conexao }
-        })
-      )
-
+      const lista = Object.entries(data).map(([id, imp]) => ({
+        id,
+        ...imp,
+        conexao: "indefinido",
+      }))
       setImpressoras(lista)
     })
 
     return () => unsubscribe()
   }, [])
 
-  // Atualização automática a cada 60s
   useEffect(() => {
-    const interval = setInterval(async () => {
-      if (!Array.isArray(impressoras)) return
+    ws.current = new WebSocket("wss://sistema-t-i-reciclar.onrender.com")
 
-      const atualizadas = await Promise.all(
-        impressoras.map(async (imp) => {
-          const conexao = await checarConexaoBackend(imp.ip)
-          return { ...imp, conexao }
-        })
-      )
+    ws.current.onopen = () => {
+      impressoras.forEach((imp) => {
+        if (imp.ip) {
+          ws.current.send(JSON.stringify({ type: "check", ip: imp.ip }))
+        }
+      })
+    }
 
-      setImpressoras(atualizadas)
-    }, 60000)
+    ws.current.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data)
+        if (msg.type === "status" && msg.ip && msg.status) {
+          atualizarStatus(msg.ip, msg.status)
+        }
+      } catch (error) {
+        console.error("Erro ao processar mensagem WS:", error)
+      }
+    }
 
-    return () => clearInterval(interval)
+    ws.current.onclose = () => {}
+
+    ws.current.onerror = (error) => {
+      console.error("Erro WS:", error)
+    }
+
+    return () => {
+      if (ws.current) ws.current.close()
+    }
   }, [impressoras])
 
   return (
@@ -73,7 +79,9 @@ export default function VisualizacaoImpressoras() {
       {impressoras.map((imp) => (
         <div
           key={imp.id}
-          className={`rounded-xl p-4 shadow-md text-white ${CONEXAO_CONFIG[imp.conexao] || "bg-gray-400"}`}
+          className={`rounded-xl p-4 shadow-md text-white ${
+            CONEXAO_CONFIG[imp.conexao] || "bg-gray-400"
+          }`}
         >
           <p><strong>IP:</strong> {imp.ip || "Não informado"}</p>
           <p><strong>Status:</strong> {imp.status || "Indefinido"}</p>
