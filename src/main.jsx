@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import './index.css'
 import CamisetasCadastro from './pages/register/t-shirt'
+import ChatChamadoWeb from './pages/listachamados/chatChamado'
 
 const App = lazy(() => import('./App.jsx'))
 const Login = lazy(() => import('./pages/auth/index'))
@@ -18,6 +19,7 @@ const CadastroTablet = lazy(() => import('./pages/register/tablet'))
 const CadastroMobiliario = lazy(() => import('./pages/register/mobiliario'))
 const CadastroCamera = lazy(() => import('./pages/register/camera'))
 const CadastroFones = lazy(() => import('./pages/register/fones'))
+const ListaChamadosWeb = lazy(() => import('./pages/listachamados/index.jsx'))
 
 const VisualizarNotebooks = lazy(() => import('./pages/views/notebooks'))
 const HomeViews = lazy(() => import('./pages/views'))
@@ -88,6 +90,11 @@ const router = createBrowserRouter([
       { path: 'perfil', element: <Perfil /> },
       { path: 'register-user', element: <RegistroUser /> },
       { path: 'register-t-shirt', element: <CamisetasCadastro /> },
+      { path: 'list-chamados', element: <ListaChamadosWeb /> },
+      { path: '/chat/:id', element: <ChatChamadoWeb /> },
+
+
+      
     ],
   },
 ])

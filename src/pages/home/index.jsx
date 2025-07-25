@@ -364,7 +364,7 @@ export default function Home() {
       title: "Support",
       description: "Handle customer inquiries and tickets",
       icon: <ClipboardList className="w-8 h-8" />,
-      onClick: () => navigate("/chamados"),
+      onClick: () => navigate("/list-chamados"),
       color: "from-rose-500 to-rose-600",
       bgColor: "bg-rose-50",
       textColor: "text-rose-700",
