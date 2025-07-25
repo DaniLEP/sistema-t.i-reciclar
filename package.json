@@ -31,7 +31,7 @@
     "file-saver": "^2.0.5",
     "firebase": "^11.8.1",
     "firebase-admin": "^13.4.0",
-    "framer-motion": "^12.16.0",
+    "framer-motion": "^12.23.9",
     "lucide-react": "^0.511.0",
     "motion": "^12.23.5",
     "ping": "^0.4.4",
