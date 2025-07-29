@@ -410,7 +410,7 @@ export default function DashboardRealtime() {
             </TabsList>
           </div>
 
-          <TabsContent value="charts" className="space-y-6">
+          <TabsContent value="charts" className="space-y-4">
             <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-blue-50/80 to-purple-50/80 border-b border-gray-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -453,7 +453,7 @@ export default function DashboardRealtime() {
                 </div>
               </CardHeader>
               <CardContent className="p-8">
-                <ChartContainer config={chartConfig} className="min-h-[450px]">
+                <ChartContainer config={chartConfig} className="min-h-[250px]">
                   {chartType === "bar" && (
                     <BarChart data={chartData}>
                       <XAxis dataKey="name" />
