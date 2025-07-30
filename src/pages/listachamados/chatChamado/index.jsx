@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom"; // Se usar Next.js 13+ com app router, adapte para useRouter()
+import { useParams } from "react-router-dom";
 import { getDatabase, ref, onValue, push, update } from "firebase/database";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,107 @@ import {
   XCircle,
   MoreVertical,
   ArrowLeft,
-  Paperclip,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function AvaliacaoChamado({ uid, chamadoId, statusChamado, avaliacao, onAvaliacaoSalva }) {
+  const [nota, setNota] = useState(avaliacao?.nota || 0);
+  const [comentario, setComentario] = useState(avaliacao?.comentario || "");
+  const [salvando, setSalvando] = useState(false);
+
+  const podeAvaliar = statusChamado.toLowerCase() === "fechado" && !avaliacao;
+
+  const salvarAvaliacao = async () => {
+    if (nota < 1) {
+      alert("Por favor, selecione uma nota.");
+      return;
+    }
+    setSalvando(true);
+    const db = getDatabase();
+    const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}/avaliacao`);
+
+    try {
+      await update(chamadoRef, {
+        nota,
+        comentario,
+        timestamp: Date.now(),
+      });
+      onAvaliacaoSalva();
+    } catch (error) {
+      console.error("Erro ao salvar avaliação:", error);
+      alert("Erro ao salvar avaliação, tente novamente.");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  if (!podeAvaliar && !avaliacao) return null;
+
+  return (
+    <Card className="mx-4 my-4 p-4 bg-gray-50 shadow-inner rounded-md max-w-4xl">
+      <CardHeader>
+        <h3 className="text-lg font-semibold">Avaliação do Atendimento</h3>
+      </CardHeader>
+      <CardContent>
+        {avaliacao ? (
+          <div>
+            <p className="font-semibold text-yellow-500 text-xl mb-2">
+              {"★".repeat(avaliacao.nota)}{" "}
+              <span className="text-gray-500">({avaliacao.nota}/5)</span>
+            </p>
+            {avaliacao.comentario && (
+              <p className="whitespace-pre-wrap">{avaliacao.comentario}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-2">
+              Avaliado em{" "}
+              {new Date(avaliacao.timestamp).toLocaleString("pt-BR", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setNota(i)}
+                  className={`text-3xl ${
+                    i <= nota ? "text-yellow-400" : "text-gray-300"
+                  } hover:text-yellow-500 transition-colors`}
+                  aria-label={`Nota ${i} estrelas`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <textarea
+              rows={3}
+              placeholder="Deixe um comentário (opcional)"
+              className="w-full border border-gray-300 rounded p-2 resize-none"
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              disabled={salvando}
+            />
+            <Button
+              onClick={salvarAvaliacao}
+              disabled={salvando || nota < 1}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {salvando ? "Salvando..." : "Enviar Avaliação"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ChatChamado() {
-  const { id } = useParams();
+  const { uid, chamadoId } = useParams();
+
   const [mensagens, setMensagens] = useState([]);
   const [novaMensagem, setNovaMensagem] = useState("");
   const [statusChamado, setStatusChamado] = useState("carregando");
@@ -42,30 +137,33 @@ export default function ChatChamado() {
   const [nome, setNome] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [avaliacao, setAvaliacao] = useState(null);
+
   const mensagensEndRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!uid || !chamadoId) return;
 
     const db = getDatabase();
     setIsLoading(true);
 
-    const chamadoRef = ref(db, `chamados/${id}`);
+    const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}`);
     const unsubscribeChamado = onValue(chamadoRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        setTitulo(data.categoria || `Chamado #${id}`);
+        setTitulo(data.categoria || `Chamado #${chamadoId}`);
         setDescricao(data.descricao || "");
         setPrioridade(data.prioridade || "");
         setProtocolo(data.protocolo || "");
         setNome(data.nome || "");
         setStatusChamado(data.status || "Aberto");
+        setAvaliacao(data.avaliacao || null);
       }
       setIsLoading(false);
     });
 
-    const mensagensRef = ref(db, `chamados/${id}/mensagens`);
+    const mensagensRef = ref(db, `chamados/${uid}/${chamadoId}/mensagens`);
     const unsubscribeMsgs = onValue(mensagensRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -83,19 +181,19 @@ export default function ChatChamado() {
       unsubscribeChamado();
       unsubscribeMsgs();
     };
-  }, [id]);
+  }, [uid, chamadoId]);
 
   useEffect(() => {
     mensagensEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensagens]);
 
   const enviarMensagem = async () => {
-    if (novaMensagem.trim() === "" || statusChamado.toLowerCase() === "fechado")
+    if (novaMensagem.trim() === "" || statusChamado.toLowerCase() === "Fechado")
       return;
 
     setIsSending(true);
     const db = getDatabase();
-    const mensagensRef = ref(db, `chamados/${id}/mensagens`);
+    const mensagensRef = ref(db, `chamados/${uid}/${chamadoId}/mensagens`);
 
     try {
       await push(mensagensRef, {
@@ -114,7 +212,7 @@ export default function ChatChamado() {
 
   const alterarStatus = async (novoStatus) => {
     const db = getDatabase();
-    const chamadoRef = ref(db, `chamados/${id}`);
+    const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}`);
 
     try {
       await update(chamadoRef, {
@@ -122,8 +220,8 @@ export default function ChatChamado() {
         atualizadoEm: Date.now(),
       });
 
-      if (novoStatus.toLowerCase() === "fechado") {
-        const mensagensRef = ref(db, `chamados/${id}/mensagens`);
+      if (novoStatus.toLowerCase() === "Fechado") {
+        const mensagensRef = ref(db, `chamados/${uid}/${chamadoId}/mensagens`);
         await push(mensagensRef, {
           texto: "Este chamado foi encerrado pelo administrador.",
           autor: "sistema",
@@ -175,11 +273,11 @@ export default function ChatChamado() {
           icon: Clock,
           label: "Em Andamento",
         };
-      case "fechado":
+      case "Fechado":
         return {
           color: "bg-red-50 text-red-700 border-red-200",
           icon: XCircle,
-          label: "Fechado",
+          label: "Fechados",
         };
       default:
         return {
@@ -515,85 +613,60 @@ export default function ChatChamado() {
         </ScrollArea>
       </div>
 
+      {/* Mostrar avaliação se chamado estiver fechado */}
+      {(statusChamado.toLowerCase() === "fechado") && (
+        <AvaliacaoChamado
+          uid={uid}
+          chamadoId={chamadoId}
+          statusChamado={statusChamado}
+          avaliacao={avaliacao}
+          onAvaliacaoSalva={() => {
+            // Recarrega a avaliação após salvar
+            const db = getDatabase();
+            const avaliacaoRef = ref(db, `chamados/${uid}/${chamadoId}/avaliacao`);
+            onValue(avaliacaoRef, (snapshot) => {
+              setAvaliacao(snapshot.val());
+            }, { onlyOnce: true });
+          }}
+        />
+      )}
+
       <Card className="rounded-none border-x-0 border-b-0 shadow-lg bg-white/90 backdrop-blur-sm">
         <CardContent className="p-4 lg:p-6">
-          {statusChamado.toLowerCase() === "fechado" ? (
-            <div className="text-center py-6 space-y-2">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <p className="text-slate-700 font-medium">Chamado encerrado</p>
-              <p className="text-slate-500 text-sm">
-                Este chamado foi finalizado e não aceita mais mensagens
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex gap-3 items-end">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-slate-100 flex-shrink-0"
-                  disabled={statusChamado.toLowerCase() === "fechado"}
-                >
-                  <Paperclip className="h-5 w-5" />
-                </Button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviarMensagem();
+            }}
+            className="flex items-center gap-3"
+          >
+            <Input
+              type="text"
+              value={novaMensagem}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                statusChamado.toLowerCase() === "fechado"
+                  ? "Chamado encerrado, não é possível enviar mensagens"
+                  : "Digite sua mensagem aqui"
+              }
+              disabled={statusChamado.toLowerCase() === "fechado" || isSending}
+              ref={inputRef}
+              autoFocus
+            />
 
-                <div className="flex-1 relative">
-                  <Input
-                    ref={inputRef}
-                    value={novaMensagem}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Digite sua mensagem..."
-                    className="pr-12 py-3 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl bg-white/80 backdrop-blur-sm transition-all duration-200"
-                    disabled={
-                      statusChamado.toLowerCase() === "fechado" || isSending
-                    }
-                    maxLength={1000}
-                  />
-                  {novaMensagem.trim() && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  onClick={enviarMensagem}
-                  disabled={
-                    !novaMensagem.trim() ||
-                    statusChamado.toLowerCase() === "fechado" ||
-                    isSending
-                  }
-                  size="icon"
-                  className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl disabled:opacity-50"
-                >
-                  {isSending ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  ) : (
-                    <Send className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Pressione Enter para enviar</span>
-                {novaMensagem.length > 0 && (
-                  <span
-                    className={cn(
-                      "transition-colors duration-200",
-                      novaMensagem.length > 500
-                        ? "text-amber-600"
-                        : "text-slate-400"
-                    )}
-                  >
-                    {novaMensagem.length}/1000
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+            <Button
+              type="submit"
+              disabled={
+                novaMensagem.trim() === "" ||
+                statusChamado.toLowerCase() === "fechado" ||
+                isSending
+              }
+              aria-label="Enviar mensagem"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

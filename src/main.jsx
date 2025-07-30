@@ -4,7 +4,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import './index.css'
 import CamisetasCadastro from './pages/register/t-shirt'
-import ChatChamadoWeb from './pages/listachamados/chatChamado'
+import DashboardChamados from './pages/listachamados/dashboard'
+import ChatChamado from './pages/listachamados/chatChamado'
 
 const App = lazy(() => import('./App.jsx'))
 const Login = lazy(() => import('./pages/auth/index'))
@@ -91,7 +92,8 @@ const router = createBrowserRouter([
       { path: 'register-user', element: <RegistroUser /> },
       { path: 'register-t-shirt', element: <CamisetasCadastro /> },
       { path: 'list-chamados', element: <ListaChamadosWeb /> },
-      { path: '/chat/:id', element: <ChatChamadoWeb /> },
+      { path: 'admin/chat/:uid/:chamadoId', element: <ChatChamado /> },
+      { path: '/dashboard-chamados', element: <DashboardChamados /> },
 
 
       

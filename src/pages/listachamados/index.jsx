@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom" // React Router
-import { getDatabase, ref, onValue, update } from "firebase/database"
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getDatabase, ref, onValue, update } from "firebase/database";
 
 import {
   Search,
@@ -13,14 +13,21 @@ import {
   User,
   Calendar,
   MessageSquare,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,94 +38,130 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 const ListaChamadosWeb = () => {
-  const [chamados, setChamados] = useState([])
-  const [filtroStatus, setFiltroStatus] = useState("todos")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate() // React Router navigate
+  const [chamados, setChamados] = useState([]);
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [fechandoChamadoId, setFechandoChamadoId] = useState(null); // loading botão fechar
+  const navigate = useNavigate();
+
+  // Capitaliza a primeira letra da string
+  const capitalize = (str) => {
+    if (typeof str !== "string" || str.length === 0) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  // Normaliza o status para minúsculas
+  const normalizeStatus = (status) =>
+    typeof status === "string" ? status.toLowerCase() : "";
 
   useEffect(() => {
-    const db = getDatabase()
-    const chamadosRef = ref(db, "chamados")
+    const db = getDatabase();
+    const chamadosRef = ref(db, "chamados");
 
     const unsubscribe = onValue(chamadosRef, (snapshot) => {
-      const data = snapshot.val()
+      const data = snapshot.val();
       if (data) {
-        const lista = Object.entries(data).map(([id, chamado]) => ({
-          id,
-          ...chamado,
-        }))
-        setChamados(lista.sort((a, b) => b.updatedAt - a.updatedAt))
+        const lista = [];
+
+        Object.entries(data).forEach(([uid, chamadosUsuario]) => {
+          Object.entries(chamadosUsuario).forEach(([id, chamado]) => {
+            // Garante consistência de campo updatedAt
+            lista.push({
+              uid,
+              id,
+              ...chamado,
+              status: normalizeStatus(chamado.status),
+              updatedAt: chamado.updatedAt || chamado.atualizadoEm || chamado.criadoEm || 0,
+            });
+          });
+        });
+
+        // Ordena por updatedAt descendente
+        lista.sort((a, b) => b.updatedAt - a.updatedAt);
+
+        setChamados(lista);
       } else {
-        setChamados([])
+        setChamados([]);
       }
-      setLoading(false)
-    })
+      setLoading(false);
+    });
 
-    return () => unsubscribe()
-  }, [])
+    return () => unsubscribe();
+  }, []);
 
-  const fecharChamado = async (id) => {
-    const db = getDatabase()
-    const chamadoRef = ref(db, `chamados/${id}`)
-    await update(chamadoRef, {
-      status: "fechado",
-      updatedAt: Date.now(),
-    })
-  }
+  const fecharChamado = async (id, uid) => {
+    setFechandoChamadoId(id);
+    try {
+      const db = getDatabase();
+      const chamadoRef = ref(db, `chamados/${uid}/${id}`);
+      await update(chamadoRef, {
+        status: "Resolvido",
+        updatedAt: Date.now(),
+      });
+    } catch (error) {
+      console.error("Erro ao fechar chamado:", error);
+    } finally {
+      setFechandoChamadoId(null);
+    }
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "aberto":
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="h-4 w-4" />;
       case "andamento":
-        return <Clock className="h-4 w-4" />
-      case "fechado":
-        return <CheckCircle className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />;
+      case "Resolvido":
+        return <CheckCircle className="h-4 w-4" />;
       default:
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="h-4 w-4" />;
     }
-  }
+  };
 
   const getStatusVariant = (status) => {
     switch (status) {
       case "aberto":
-        return "destructive"
+        return "destructive";
       case "andamento":
-        return "default"
-      case "fechado":
-        return "secondary"
+        return "default";
+      case "Resolvido":
+        return "secondary";
       default:
-        return "default"
+        return "default";
     }
-  }
+  };
 
   const formatDate = (timestamp) => {
-    if (!timestamp) return "-"
+    if (!timestamp) return "-";
     return new Date(timestamp).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
+  // Filtra chamados por status e busca (título e criadoPor)
   const chamadosFiltrados = chamados.filter((chamado) => {
-    const matchesStatus = filtroStatus === "todos" || chamado.status === filtroStatus
+    const matchesStatus =
+      filtroStatus === "todos" || chamado.status === filtroStatus;
     const matchesSearch =
       (chamado.titulo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (chamado.criadoPor || "").toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+      (chamado.criadoPor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (chamado.nome || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
+  // Conta chamados para cada status
   const getStatusCount = (status) => {
-    if (status === "todos") return chamados.length
-    return chamados.filter((ch) => ch.status === status).length
-  }
+    if (status === "todos") return chamados.length;
+    return chamados.filter((ch) => ch.status === status).length;
+  };
 
   if (loading) {
     return (
@@ -131,7 +174,7 @@ const ListaChamadosWeb = () => {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -140,13 +183,23 @@ const ListaChamadosWeb = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Chamados</h1>
-          <p className="text-muted-foreground">Gerencie e acompanhe todos os chamados de suporte</p>
+          <p className="text-muted-foreground">
+            Gerencie e acompanhe todos os chamados de suporte
+          </p>
+          <Button
+            variant="primary"
+            className="mt-4"
+            onClick={() => navigate("/dashboard-chamados")}
+          >
+            Ir para Dashboard
+          </Button>
         </div>
 
         {/* Search */}
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
+            aria-label="Buscar chamados"
             placeholder="Buscar chamados..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -161,9 +214,18 @@ const ListaChamadosWeb = () => {
           { status: "todos", label: "Total", color: "bg-blue-500" },
           { status: "aberto", label: "Abertos", color: "bg-red-500" },
           { status: "andamento", label: "Em Andamento", color: "bg-yellow-500" },
-          { status: "fechado", label: "Fechados", color: "bg-green-500" },
+          { status: "Resolvido", label: "Resolvido", color: "bg-green-500" },
         ].map(({ status, label, color }) => (
-          <Card key={status} className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card
+            key={status}
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setFiltroStatus(status)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") setFiltroStatus(status);
+            }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${color}`} />
@@ -194,9 +256,9 @@ const ListaChamadosWeb = () => {
                 <Clock className="h-4 w-4" />
                 Em Andamento ({getStatusCount("andamento")})
               </TabsTrigger>
-              <TabsTrigger value="fechado" className="flex items-center gap-2">
+              <TabsTrigger value="Resolvido" className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Fechados ({getStatusCount("fechado")})
+                Resolvidos ({getStatusCount("Resolvido")})
               </TabsTrigger>
             </TabsList>
 
@@ -214,78 +276,107 @@ const ListaChamadosWeb = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Chamado</TableHead>
+                        <TableHead>Protocolo</TableHead>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Prioridade</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Criado por</TableHead>
                         <TableHead>Última atualização</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
+
                     <TableBody>
                       {chamadosFiltrados.map((chamado) => (
-                        <TableRow key={chamado.id} className="hover:bg-muted/50">
+                        <TableRow
+                          key={`${chamado.uid}_${chamado.id}`}
+                          className="hover:bg-muted/50"
+                        >
+                          <TableCell className="text-sm text-muted-foreground">
+                            {chamado.protocolo || "-"}
+                          </TableCell>
+
                           <TableCell>
                             <div>
                               <p className="font-medium">{chamado.titulo}</p>
-                              {chamado.ultimaMensagem && (
+                              {chamado.descricao && (
                                 <p className="text-sm text-muted-foreground truncate max-w-xs">
-                                  {chamado.ultimaMensagem}
+                                  {chamado.descricao}
                                 </p>
                               )}
                             </div>
                           </TableCell>
+
+                          <TableCell>{chamado.categoria || "-"}</TableCell>
+                          <TableCell>{chamado.prioridade || "-"}</TableCell>
+
                           <TableCell>
                             <Badge
                               variant={getStatusVariant(chamado.status)}
                               className="flex items-center gap-1 w-fit"
                             >
                               {getStatusIcon(chamado.status)}
-                              {chamado.status.charAt(0).toUpperCase() + chamado.status.slice(1)}
+                              {capitalize(chamado.status)}
                             </Badge>
                           </TableCell>
+
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-muted-foreground" />
-                              {chamado.criadoPor}
+                              {chamado.nome || chamado.criadoPor || "Desconhecido"}
                             </div>
                           </TableCell>
+
                           <TableCell>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
                               {formatDate(chamado.updatedAt)}
                             </div>
                           </TableCell>
+
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/chat/${chamado.id}`)} // React Router navigation
+                                onClick={() =>
+                                  navigate(`/admin/chat/${chamado.uid}/${chamado.id}`)
+                                }
                                 className="flex items-center gap-1"
+                                aria-label={`Ver detalhes do chamado ${chamado.protocolo || chamado.id}`}
                               >
                                 <Eye className="h-4 w-4" />
                                 Ver
                               </Button>
 
-                              {chamado.status !== "fechado" && (
+                              {chamado.status !== "Resolvido" && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm" className="flex items-center gap-1">
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="flex items-center gap-1"
+                                      disabled={fechandoChamadoId === chamado.id}
+                                    >
                                       <X className="h-4 w-4" />
-                                      Fechar
+                                      {fechandoChamadoId === chamado.id
+                                        ? "Fechando..."
+                                        : "Fechar"}
                                     </Button>
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Fechar chamado</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Tem certeza que deseja fechar este chamado? Esta ação não pode ser desfeita.
+                                        Tem certeza que deseja fechar este chamado? Esta ação não pode ser
+                                        desfeita.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                       <AlertDialogAction
-                                        onClick={() => fecharChamado(chamado.id)}
+                                        onClick={() => fecharChamado(chamado.id, chamado.uid)}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
                                         Fechar chamado
@@ -307,7 +398,7 @@ const ListaChamadosWeb = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default ListaChamadosWeb
+export default ListaChamadosWeb;
