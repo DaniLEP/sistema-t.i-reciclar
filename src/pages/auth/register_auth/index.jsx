@@ -1,78 +1,111 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { auth, createUserWithEmailAndPassword, db } from "../../../../firebase"
-import { ref, set } from "firebase/database"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import { motion, AnimatePresence } from "framer-motion"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
-import { Eye, EyeOff, User, Mail, Shield, Lock, ArrowLeft, CheckCircle, XCircle, Loader2 } from "lucide-react"
-import { Label } from "@radix-ui/react-label"
-import { Button } from "@headlessui/react"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { auth, createUserWithEmailAndPassword, db } from "../../../../firebase";
+import { ref, set } from "firebase/database";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { motion, AnimatePresence } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  Eye,
+  EyeOff,
+  User,
+  Mail,
+  Shield,
+  Lock,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import { Label } from "@radix-ui/react-label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function RegistroUser() {
-  const [formData, setFormData] = useState({ nome: "", email: "", funcao: "", senha: "", confirmSenha: "" })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [validationErrors, setValidationErrors] = useState({})
-  const [step, setStep] = useState(1)
-  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    nome: "",
+    email: "",
+    funcao: "",
+    senha: "",
+    confirmSenha: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [step, setStep] = useState(1);
+  const navigate = useNavigate(-1);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  const validatePassword = (senha) => senha.length >= 6
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (senha) => senha.length >= 6;
 
   const getPasswordStrength = (password) => {
-    let strength = 0
-    if (password.length >= 6) strength += 25
-    if (password.match(/[a-z]/)) strength += 25
-    if (password.match(/[A-Z]/)) strength += 25
-    if (password.match(/[0-9]/) || password.match(/[^a-zA-Z0-9]/)) strength += 25
-    return strength
-  }
+    let strength = 0;
+    if (password.length >= 6) strength += 25;
+    if (password.match(/[a-z]/)) strength += 25;
+    if (password.match(/[A-Z]/)) strength += 25;
+    if (password.match(/[0-9]/) || password.match(/[^a-zA-Z0-9]/)) strength += 25;
+    return strength;
+  };
 
   const validateField = (field, value) => {
-    const errors = { ...validationErrors }
+    const errors = { ...validationErrors };
     switch (field) {
       case "nome":
-        if (!value.trim()) errors.nome = "Nome é obrigatório"
-        else if (value.length < 2) errors.nome = "Nome deve ter pelo menos 2 caracteres"
-        else delete errors.nome
-        break
+        if (!value.trim()) errors.nome = "Nome é obrigatório";
+        else if (value.length < 2) errors.nome = "Nome deve ter pelo menos 2 caracteres";
+        else delete errors.nome;
+        break;
       case "email":
-        if (!value) errors.email = "E-mail é obrigatório"
-        else if (!validateEmail(value)) errors.email = "E-mail inválido"
-        else delete errors.email
-        break
+        if (!value) errors.email = "E-mail é obrigatório";
+        else if (!validateEmail(value)) errors.email = "E-mail inválido";
+        else delete errors.email;
+        break;
       case "senha":
-        if (!value) errors.senha = "Senha é obrigatória"
-        else if (!validatePassword(value)) errors.senha = "Senha deve ter pelo menos 6 caracteres"
-        else delete errors.senha
-        break
+        if (!value) errors.senha = "Senha é obrigatória";
+        else if (!validatePassword(value)) errors.senha = "Senha deve ter pelo menos 6 caracteres";
+        else delete errors.senha;
+        break;
       case "confirmSenha":
-        if (!value) errors.confirmSenha = "Confirmação de senha é obrigatória"
-        else if (value !== formData.senha) errors.confirmSenha = "Senhas não coincidem"
-        else delete errors.confirmSenha
-        break
+        if (!value) errors.confirmSenha = "Confirmação de senha é obrigatória";
+        else if (value !== formData.senha) errors.confirmSenha = "Senhas não coincidem";
+        else delete errors.confirmSenha;
+        break;
       case "funcao":
-        if (!value) errors.funcao = "Função é obrigatória"
-        else delete errors.funcao
-        break
+        if (!value) errors.funcao = "Função é obrigatória";
+        else delete errors.funcao;
+        break;
     }
-    setValidationErrors(errors)
-  }
+    setValidationErrors(errors);
+  };
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    validateField(field, value)
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    validateField(field, value);
+  };
 
   const canProceedToStep2 = () =>
-    formData.nome && formData.email && validateEmail(formData.email) && !validationErrors.nome && !validationErrors.email
+    formData.nome &&
+    formData.email &&
+    validateEmail(formData.email) &&
+    !validationErrors.nome &&
+    !validationErrors.email;
 
   const canSubmit = () =>
     Object.keys(validationErrors).length === 0 &&
@@ -80,56 +113,58 @@ export default function RegistroUser() {
     formData.email &&
     formData.funcao &&
     formData.senha &&
-    formData.confirmSenha
+    formData.confirmSenha;
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    Object.keys(formData).forEach((field) => validateField(field, formData[field]));
+
     if (!canSubmit()) {
-      toast.warning("Por favor, corrija os erros no formulário.")
-      return
+      toast.warning("Por favor, corrija os erros no formulário.");
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.senha)
-      const newUser = userCredential.user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.senha
+      );
+      const newUser = userCredential.user;
 
       await set(ref(db, "usuarios/" + newUser.uid), {
         nome: formData.nome,
         email: formData.email,
-        funcao: formData.funcao,
+        funcao: formData.funcao.toLowerCase(),
         uid: newUser.uid,
-      })
+        ativo: true,
+        online: false,
+        criadoEm: Date.now(),
+      });
 
-      toast.success("Usuário criado com sucesso!")
-      setTimeout(() => navigate("/"), 2000)
+      toast.success("Usuário criado com sucesso!");
+      setTimeout(() => navigate("/admin/usuarios"), 2000);
     } catch (error) {
-      console.error("Erro ao criar usuário:", error)
+      console.error("Erro ao criar usuário:", error);
       if (error.code === "auth/email-already-in-use") {
-        toast.error("Este e-mail já está em uso.")
+        toast.error("Este e-mail já está em uso.");
       } else {
-        toast.error(`Erro: ${error.message}`)
+        toast.error(`Erro: ${error.message}`);
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const passwordStrength = getPasswordStrength(formData.senha)
-
-  const getStrengthColor = (strength) => {
-    if (strength < 25) return "bg-red-500"
-    if (strength < 50) return "bg-orange-500"
-    if (strength < 75) return "bg-yellow-500"
-    return "bg-green-500"
-  }
-
+  // password strength helpers
+  const passwordStrength = getPasswordStrength(formData.senha);
   const getStrengthText = (strength) => {
-    if (strength < 25) return "Muito fraca"
-    if (strength < 50) return "Fraca"
-    if (strength < 75) return "Média"
-    return "Forte"
-  }
+    if (strength < 25) return "Muito fraca";
+    if (strength < 50) return "Fraca";
+    if (strength < 75) return "Média";
+    return "Forte";
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
@@ -226,7 +261,7 @@ export default function RegistroUser() {
                     </div>
 
                     <div className="flex justify-end">
-                      <Link to="/Home">
+                      <Link to="/gestão-users">
                         <Button type="button" variant="outline" className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 h-12">
                           Cancelar
                         </Button>
@@ -363,7 +398,7 @@ export default function RegistroUser() {
                       </Button>
 
                       <div className="flex gap-3">
-                        <Link to="/Home">
+                      <Link to="/gestão-users">
                           <Button type="button" variant="outline" className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 h-12">
                             Cancelar
                           </Button>

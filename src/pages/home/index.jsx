@@ -128,7 +128,7 @@ export default function Home() {
       title: "User Management",
       description: "Manage user accounts, roles and IT service permissions",
       icon: <Users className="w-8 h-8" />,
-      onClick: () => navigate("/register-user"),
+      onClick: () => navigate("/gestão-users"),
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-50",
       textColor: "text-orange-700",

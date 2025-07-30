@@ -6,6 +6,7 @@ import './index.css'
 import CamisetasCadastro from './pages/register/t-shirt'
 import DashboardChamados from './pages/listachamados/dashboard'
 import ChatChamado from './pages/listachamados/chatChamado'
+import GestaoUsuarios from './pages/gestãoUser'
 
 const App = lazy(() => import('./App.jsx'))
 const Login = lazy(() => import('./pages/auth/index'))
@@ -89,11 +90,12 @@ const router = createBrowserRouter([
       { path: 'view-fone', element: <VisualizarFones /> },
       { path: 'dashboard', element: <DashboardRealtime /> },
       { path: 'perfil', element: <Perfil /> },
-      { path: 'register-user', element: <RegistroUser /> },
+      { path: '/admin/usuarios/registro', element: <RegistroUser /> },
       { path: 'register-t-shirt', element: <CamisetasCadastro /> },
       { path: 'list-chamados', element: <ListaChamadosWeb /> },
       { path: 'admin/chat/:uid/:chamadoId', element: <ChatChamado /> },
       { path: '/dashboard-chamados', element: <DashboardChamados /> },
+      { path: '/gestão-users', element: <GestaoUsuarios /> },
 
 
       
