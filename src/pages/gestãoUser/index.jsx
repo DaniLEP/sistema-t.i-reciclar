@@ -68,9 +68,9 @@ export default function GestaoUsuarios() {
           .then(() => {
             set(statusRef, {
               uid: user.uid,
-              nome: user.displayName || "Usuário",
+              nome: user.displayName || " ",
               email: user.email || "",
-              funcao: "Administrador", // ajuste conforme sua lógica
+              funcao: " ", // ajuste conforme sua lógica
               online: true,
               lastSeen: serverTimestamp(),
               ativo: true,
