@@ -3,37 +3,26 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getDatabase, ref, onValue, push, update } from "firebase/database";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import {
-  Send,
-  Clock,
-  Settings,
-  MessageCircle,
-  AlertCircle,
-  XCircle,
-  MoreVertical,
-  ArrowLeft,
-} from "lucide-react";
+
+import { Send, Clock, Settings, MessageCircle, AlertCircle, XCircle, MoreVertical, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function AvaliacaoChamado({ uid, chamadoId, statusChamado, avaliacao, onAvaliacaoSalva }) {
   const [nota, setNota] = useState(avaliacao?.nota || 0);
   const [comentario, setComentario] = useState(avaliacao?.comentario || "");
   const [salvando, setSalvando] = useState(false);
-
   const podeAvaliar = statusChamado.toLowerCase() === "fechado" && !avaliacao;
 
   const salvarAvaliacao = async () => {
@@ -44,13 +33,8 @@ function AvaliacaoChamado({ uid, chamadoId, statusChamado, avaliacao, onAvaliaca
     setSalvando(true);
     const db = getDatabase();
     const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}/avaliacao`);
-
     try {
-      await update(chamadoRef, {
-        nota,
-        comentario,
-        timestamp: Date.now(),
-      });
+      await update(chamadoRef, { nota, comentario, timestamp: Date.now() });
       onAvaliacaoSalva();
     } catch (error) {
       console.error("Erro ao salvar avaliação:", error);
@@ -74,9 +58,7 @@ function AvaliacaoChamado({ uid, chamadoId, statusChamado, avaliacao, onAvaliaca
               {"★".repeat(avaliacao.nota)}{" "}
               <span className="text-gray-500">({avaliacao.nota}/5)</span>
             </p>
-            {avaliacao.comentario && (
-              <p className="whitespace-pre-wrap">{avaliacao.comentario}</p>
-            )}
+            {avaliacao.comentario && <p className="whitespace-pre-wrap">{avaliacao.comentario}</p>}
             <p className="text-xs text-gray-400 mt-2">
               Avaliado em{" "}
               {new Date(avaliacao.timestamp).toLocaleString("pt-BR", {
@@ -126,7 +108,6 @@ function AvaliacaoChamado({ uid, chamadoId, statusChamado, avaliacao, onAvaliaca
 
 export default function ChatChamado() {
   const { uid, chamadoId } = useParams();
-
   const [mensagens, setMensagens] = useState([]);
   const [novaMensagem, setNovaMensagem] = useState("");
   const [statusChamado, setStatusChamado] = useState("carregando");
@@ -138,13 +119,18 @@ export default function ChatChamado() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [avaliacao, setAvaliacao] = useState(null);
-
   const mensagensEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Pede permissão de notificação ao montar
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   useEffect(() => {
     if (!uid || !chamadoId) return;
-
     const db = getDatabase();
     setIsLoading(true);
 
@@ -171,7 +157,30 @@ export default function ChatChamado() {
           id: msgId,
           ...msg,
         }));
-        setMensagens(lista.sort((a, b) => a.timestamp - b.timestamp));
+        const ordenadas = lista.sort((a, b) => a.timestamp - b.timestamp);
+        setMensagens(ordenadas);
+
+        // Pega a última mensagem para notificação
+        const ultimaMensagem = ordenadas[ordenadas.length - 1];
+        if (ultimaMensagem) {
+          // Não notifica mensagens enviadas pelo admin (você mesmo)
+          if (ultimaMensagem.autor !== "admin") {
+            const mensagemTexto = ultimaMensagem.texto || "Nova mensagem";
+
+            if (
+              document.hidden &&
+              "Notification" in window &&
+              Notification.permission === "granted"
+            ) {
+              new Notification("Nova mensagem", {
+                body: mensagemTexto,
+                // icon: "/icone-do-chat.png", // opcional
+              });
+            } else {
+              toast.info(`Nova mensagem: ${mensagemTexto}`);
+            }
+          }
+        }
       } else {
         setMensagens([]);
       }
@@ -188,13 +197,10 @@ export default function ChatChamado() {
   }, [mensagens]);
 
   const enviarMensagem = async () => {
-    if (novaMensagem.trim() === "" || statusChamado.toLowerCase() === "Fechado")
-      return;
-
+    if (novaMensagem.trim() === "" || statusChamado.toLowerCase() === "fechado") return;
     setIsSending(true);
     const db = getDatabase();
     const mensagensRef = ref(db, `chamados/${uid}/${chamadoId}/mensagens`);
-
     try {
       await push(mensagensRef, {
         texto: novaMensagem.trim(),
@@ -213,14 +219,12 @@ export default function ChatChamado() {
   const alterarStatus = async (novoStatus) => {
     const db = getDatabase();
     const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}`);
-
     try {
       await update(chamadoRef, {
         status: novoStatus,
         atualizadoEm: Date.now(),
       });
-
-      if (novoStatus.toLowerCase() === "Fechado") {
+      if (novoStatus.toLowerCase() === "fechado") {
         const mensagensRef = ref(db, `chamados/${uid}/${chamadoId}/mensagens`);
         await push(mensagensRef, {
           texto: "Este chamado foi encerrado pelo administrador.",
@@ -238,7 +242,6 @@ export default function ChatChamado() {
     const hoje = new Date();
     const ontem = new Date(hoje);
     ontem.setDate(hoje.getDate() - 1);
-
     if (data.toDateString() === hoje.toDateString()) {
       return data.toLocaleTimeString("pt-BR", {
         hour: "2-digit",
@@ -262,68 +265,31 @@ export default function ChatChamado() {
   const getStatusConfig = (status) => {
     switch (status.toLowerCase()) {
       case "aberto":
-        return {
-          color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-          icon: AlertCircle,
-          label: "Aberto",
-        };
+        return { color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: AlertCircle, label: "Aberto" };
       case "andamento":
-        return {
-          color: "bg-amber-50 text-amber-700 border-amber-200",
-          icon: Clock,
-          label: "Em Andamento",
-        };
-      case "Fechado":
-        return {
-          color: "bg-red-50 text-red-700 border-red-200",
-          icon: XCircle,
-          label: "Fechados",
-        };
+        return { color: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock, label: "Em Andamento" };
+      case "fechado":
+        return { color: "bg-red-50 text-red-700 border-red-200", icon: XCircle, label: "Fechado" };
       default:
-        return {
-          color: "bg-gray-50 text-gray-700 border-gray-200",
-          icon: Clock,
-          label: status,
-        };
+        return { color: "bg-gray-50 text-gray-700 border-gray-200", icon: Clock, label: status };
     }
   };
 
   const getAutorInfo = (autor) => {
     switch (autor) {
       case "admin":
-        return {
-          name: "Administrador",
-          avatar: "AD",
-          color: "bg-gradient-to-br from-blue-500 to-blue-600",
-          textColor: "text-white",
-        };
+        return { name: "Administrador", avatar: "AD", color: "bg-gradient-to-br from-blue-500 to-blue-600", textColor: "text-white" };
       case "usuario":
         return {
           name: nome || "Usuário",
-          avatar: nome
-            ? nome
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-            : "US",
+          avatar: nome ? nome.split(" ").map((n) => n[0]).join("").toUpperCase() : "US",
           color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
           textColor: "text-white",
         };
       case "sistema":
-        return {
-          name: "Sistema",
-          avatar: "SY",
-          color: "bg-gradient-to-br from-gray-500 to-gray-600",
-          textColor: "text-white",
-        };
+        return { name: "Sistema", avatar: "SY", color: "bg-gradient-to-br from-gray-500 to-gray-600", textColor: "text-white" };
       default:
-        return {
-          name: "Desconhecido",
-          avatar: "??",
-          color: "bg-gradient-to-br from-gray-400 to-gray-500",
-          textColor: "text-white",
-        };
+        return { name: "Desconhecido", avatar: "??", color: "bg-gradient-to-br from-gray-400 to-gray-500", textColor: "text-white" };
     }
   };
 
@@ -333,7 +299,6 @@ export default function ChatChamado() {
       enviarMensagem();
     }
   };
-
   const handleInputChange = (e) => {
     setNovaMensagem(e.target.value);
   };
@@ -388,28 +353,15 @@ export default function ChatChamado() {
                     {titulo} - {protocolo}
                   </h1>
                   <div className="flex items-center gap-3">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-xs font-medium px-3 py-1",
-                        statusConfig.color
-                      )}
-                    >
+                    <Badge variant="outline" className={cn("text-xs font-medium px-3 py-1", statusConfig.color)}>
                       <StatusIcon className="h-3 w-3 mr-1.5" />
                       {statusConfig.label}
                     </Badge>
                     <span className="text-xs text-slate-500">{nome}</span>
                   </div>
-                  {descricao && (
-                    <p className="text-sm text-slate-600 mt-1 max-w-xl">
-                      {descricao}
-                    </p>
-                  )}
+                  {descricao && <p className="text-sm text-slate-600 mt-1 max-w-xl">{descricao}</p>}
                   {prioridade && (
-                    <Badge
-                      variant="secondary"
-                      className="text-xs font-semibold mt-2"
-                    >
+                    <Badge variant="secondary" className="text-xs font-semibold mt-2">
                       Prioridade: {prioridade}
                     </Badge>
                   )}
@@ -418,11 +370,7 @@ export default function ChatChamado() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-slate-100"
-              >
+              <Button variant="ghost" size="icon" className="hover:bg-slate-100">
                 <MoreVertical className="h-4 w-4" />
               </Button>
 
@@ -473,202 +421,103 @@ export default function ChatChamado() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-slate-600 font-medium">
-                    Nenhuma mensagem ainda
-                  </p>
-                  <p className="text-slate-500 text-sm">
-                    Inicie a conversa enviando a primeira mensagem
-                  </p>
+                  <p className="text-slate-600 font-medium">Nenhuma mensagem ainda</p>
+                  <p className="text-slate-500 text-sm">Inicie a conversa enviando a primeira mensagem</p>
                 </div>
               </div>
             ) : (
               mensagens.map((msg, index) => {
                 const autorInfo = getAutorInfo(msg.autor);
                 const isAdmin = msg.autor === "admin";
-                const isSistema = msg.autor === "sistema";
-                const showAvatar =
-                  index === 0 || mensagens[index - 1].autor !== msg.autor;
-                const isLastFromAuthor =
-                  index === mensagens.length - 1 ||
-                  mensagens[index + 1].autor !== msg.autor;
-
-                if (isSistema) {
-                  return (
-                    <div
-                      key={msg.id}
-                      className="flex justify-center animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
-                    >
-                      <div className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 text-sm px-4 py-2 rounded-full border shadow-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
-                          {msg.texto}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
                 return (
                   <div
                     key={msg.id}
                     className={cn(
-                      "flex gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
+                      "flex gap-4 max-w-4xl mx-auto",
                       isAdmin ? "justify-end" : "justify-start"
                     )}
                   >
                     {!isAdmin && (
-                      <div className="flex flex-col items-center">
-                        {showAvatar ? (
-                          <Avatar className="h-10 w-10 shadow-md ring-2 ring-white">
-                            <AvatarFallback
-                              className={cn(
-                                "text-sm font-semibold",
-                                autorInfo.color,
-                                autorInfo.textColor
-                              )}
-                            >
-                              {autorInfo.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-10 h-10" />
-                        )}
-                      </div>
+                      <Avatar className={cn("flex-shrink-0", autorInfo.color)}>
+                        <AvatarFallback className={autorInfo.textColor}>
+                          {autorInfo.avatar}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
-
                     <div
                       className={cn(
-                        "flex flex-col max-w-[75%] lg:max-w-[60%]",
-                        isAdmin ? "items-end" : "items-start"
+                        "relative px-4 py-3 rounded-xl max-w-[65%] leading-tight whitespace-pre-wrap",
+                        isAdmin ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-800"
                       )}
                     >
-                      {showAvatar && (
-                        <div
-                          className={cn(
-                            "flex items-center gap-2 mb-2",
-                            isAdmin && "flex-row-reverse"
-                          )}
-                        >
-                          <span className="text-sm font-semibold text-slate-700">
-                            {autorInfo.name}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {formatarData(msg.timestamp)}
-                          </span>
-                        </div>
-                      )}
-
-                      <div
+                      {msg.texto}
+                      <time
                         className={cn(
-                          "px-4 py-3 shadow-sm max-w-full break-words transition-all duration-200 hover:shadow-md",
-                          isAdmin
-                            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md"
-                            : "bg-white text-slate-900 border border-slate-200 rounded-2xl rounded-bl-md hover:border-slate-300",
-                          isLastFromAuthor ? "mb-1" : "mb-0.5"
+                          "block text-xs opacity-70 absolute bottom-1 right-2",
+                          isAdmin ? "text-blue-200" : "text-slate-400"
                         )}
+                        dateTime={new Date(msg.timestamp).toISOString()}
                       >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.texto}
-                        </p>
-                      </div>
-
-                      {!showAvatar && (
-                        <span
-                          className={cn(
-                            "text-xs text-slate-400 mt-1 px-1",
-                            isAdmin ? "text-right" : "text-left"
-                          )}
-                        >
-                          {formatarData(msg.timestamp)}
-                        </span>
-                      )}
+                        {formatarData(msg.timestamp)}
+                      </time>
                     </div>
-
                     {isAdmin && (
-                      <div className="flex flex-col items-center">
-                        {showAvatar ? (
-                          <Avatar className="h-10 w-10 shadow-md ring-2 ring-white">
-                            <AvatarFallback
-                              className={cn(
-                                "text-sm font-semibold",
-                                autorInfo.color,
-                                autorInfo.textColor
-                              )}
-                            >
-                              {autorInfo.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-10 h-10" />
-                        )}
-                      </div>
+                      <Avatar className={cn("flex-shrink-0", autorInfo.color)}>
+                        <AvatarFallback className={autorInfo.textColor}>
+                          {autorInfo.avatar}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
                   </div>
                 );
               })
             )}
-
             <div ref={mensagensEndRef} />
           </div>
         </ScrollArea>
+
+        <div className="border-t border-slate-200 p-4 flex gap-2 bg-white">
+          <Input
+            ref={inputRef}
+            placeholder={
+              statusChamado.toLowerCase() === "fechado"
+                ? "Chamado fechado, não é possível enviar mensagens"
+                : "Digite uma mensagem"
+            }
+            value={novaMensagem}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={statusChamado.toLowerCase() === "fechado" || isSending}
+            autoFocus
+            rows={1}
+            as="textarea"
+            className="resize-none"
+          />
+          <Button
+            onClick={enviarMensagem}
+            disabled={novaMensagem.trim() === "" || statusChamado.toLowerCase() === "fechado" || isSending}
+          >
+            <Send className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
-      {/* Mostrar avaliação se chamado estiver fechado */}
-      {(statusChamado.toLowerCase() === "fechado") && (
-        <AvaliacaoChamado
-          uid={uid}
-          chamadoId={chamadoId}
-          statusChamado={statusChamado}
-          avaliacao={avaliacao}
-          onAvaliacaoSalva={() => {
-            // Recarrega a avaliação após salvar
-            const db = getDatabase();
-            const avaliacaoRef = ref(db, `chamados/${uid}/${chamadoId}/avaliacao`);
-            onValue(avaliacaoRef, (snapshot) => {
-              setAvaliacao(snapshot.val());
-            }, { onlyOnce: true });
-          }}
-        />
-      )}
+      <AvaliacaoChamado
+        uid={uid}
+        chamadoId={chamadoId}
+        statusChamado={statusChamado}
+        avaliacao={avaliacao}
+        onAvaliacaoSalva={() => {
+          // Força atualização da avaliação no estado local
+          const db = getDatabase();
+          const chamadoRef = ref(db, `chamados/${uid}/${chamadoId}/avaliacao`);
+          onValue(chamadoRef, (snapshot) => {
+            setAvaliacao(snapshot.val());
+          });
+        }}
+      />
 
-      <Card className="rounded-none border-x-0 border-b-0 shadow-lg bg-white/90 backdrop-blur-sm">
-        <CardContent className="p-4 lg:p-6">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              enviarMensagem();
-            }}
-            className="flex items-center gap-3"
-          >
-            <Input
-              type="text"
-              value={novaMensagem}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                statusChamado.toLowerCase() === "fechado"
-                  ? "Chamado encerrado, não é possível enviar mensagens"
-                  : "Digite sua mensagem aqui"
-              }
-              disabled={statusChamado.toLowerCase() === "fechado" || isSending}
-              ref={inputRef}
-              autoFocus
-            />
-
-            <Button
-              type="submit"
-              disabled={
-                novaMensagem.trim() === "" ||
-                statusChamado.toLowerCase() === "fechado" ||
-                isSending
-              }
-              aria-label="Enviar mensagem"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <ToastContainer position="top-right" autoClose={5000} />
     </div>
   );
 }
