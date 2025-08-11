@@ -51,36 +51,37 @@ export default function GestaoUsuarios() {
   const navigate = useNavigate()
 
   // Atualiza presença do usuário logado
-  useEffect(() => {
-    const db = getDatabase()
-    const connectedRef = ref(db, ".info/connected")
+// Atualiza presença do usuário logado
+useEffect(() => {
+  const db = getDatabase();
+  const connectedRef = ref(db, ".info/connected");
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) return
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!user) return;
 
-      const statusRef = ref(db, `usuarios/${user.uid}`)
+    const statusRef = ref(db, `usuarios/${user.uid}`);
 
-      onValue(connectedRef, (snapshot) => {
-        if (snapshot.val() === false) return
+    onValue(connectedRef, (snapshot) => {
+      if (snapshot.val() === false) return;
 
-        onDisconnect(statusRef)
-          .update({ online: false, lastSeen: serverTimestamp() })
-          .then(() => {
-            set(statusRef, {
-              uid: user.uid,
-              nome: user.displayName || " ",
-              email: user.email || "",
-              funcao: " ", // ajuste conforme sua lógica
-              online: true,
-              lastSeen: serverTimestamp(),
-              ativo: true,
-            })
-          })
-      })
-    })
+      // Quando desconectar, marca como offline
+      onDisconnect(statusRef).update({
+        online: false,
+        lastSeen: serverTimestamp()
+      });
 
-    return () => unsubscribe()
-  }, [])
+      // Quando conectar, atualiza apenas o status
+      update(statusRef, {
+        online: true,
+        lastSeen: serverTimestamp(),
+        ativo: true
+      });
+    });
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
   useEffect(() => {
     const unsubscribe = onValue(ref(db, "usuarios"), (snapshot) => {
