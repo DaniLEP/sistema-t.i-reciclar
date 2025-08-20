@@ -293,7 +293,7 @@ export default function RegistroUser() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Admin">Administrador</SelectItem>
-                          <SelectItem value="Cozinha">Cozinha</SelectItem>
+                          <SelectItem value="Usuario">Usuário</SelectItem>
                           <SelectItem value="T.I">T.I</SelectItem>
                         </SelectContent>
                       </Select>

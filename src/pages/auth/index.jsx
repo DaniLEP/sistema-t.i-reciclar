@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { auth, db } from "../../../firebase"
 import { Button } from "@/components/ui/button"
 
-const UserType = { ADMIN: "Admin", COZINHA: "Cozinha", TI: "T.I" }
+const UserType = { ADMIN: "Admin", User: "Usuario", TI: "T.I" }
 
 export default function Login() {
   const [email, setEmail] = useState("")
