@@ -1,21 +1,14 @@
 import { useEffect, useState } from "react"
 import { getDatabase, ref, onValue, update } from "firebase/database"
 import { app } from "../../../../firebase"
-import {
-  ArrowLeft,
-  X,
-  CameraIcon,
-  CheckCircle,
-  Clock,
-  Search,
-  Wrench,
-  XCircle,
-} from "lucide-react"
+import { ArrowLeft, X, CameraIcon, CheckCircle, Clock, Search, Wrench, XCircle, Edit3 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { ToastContainer, toast } from "react-toastify"
 import * as XLSX from "xlsx"
 import "react-toastify/dist/ReactToastify.css"
+import TermoEmprestimo from "@/pages/termo"
 
 const STATUS_OPTIONS = ["Disponível", "Quebrado", "Emprestado", "Manutenção", "Não encontrado"]
 
@@ -35,6 +28,8 @@ export default function VisualizarCamera() {
   const [motivoReadonly, setMotivoReadonly] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
+  const [showForm, setShowForm] = useState(false)
+
 
   useEffect(() => {
     const db = getDatabase(app)
@@ -166,6 +161,50 @@ export default function VisualizarCamera() {
             >
               📥 Exportar Excel
             </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setShowForm(true)}
+                          className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-2xl text-sm shadow-lg transition-all duration-300 flex items-center gap-3"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                          Termo de Empréstimo
+                        </motion.button>
+
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-white">Termo de Empréstimo</h3>
+                  <button
+                    onClick={() => setShowForm(false)}
+                    className="text-white hover:text-gray-200 transition-colors p-2 hover:bg-white/20 rounded-xl"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <TermoEmprestimo />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
           </div>
         </div>
 

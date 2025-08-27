@@ -10,6 +10,7 @@ import * as XLSX from "xlsx"
 import "react-toastify/dist/ReactToastify.css"
 import { app } from "../../../../firebase"
 import { Input } from "@/components/ui/input"
+import TermoEmprestimo from "@/pages/termo"
 
 const STATUS_OPTIONS = [ "Disponível", "Quebrado","Manutenção","Emprestado","Não encontrado", "Controlador", "Colaborador"]
 
@@ -45,6 +46,7 @@ export default function VisualizarTablets() {
   const [sortOrder, setSortOrder] = useState("asc")
   const [selectedTablets, setSelectedTablets] = useState(new Set())
   const navigate = useNavigate()
+  const [showForm, setShowForm] = useState(false)
 
   // Animação do contador
   const springConfig = { stiffness: 100, damping: 30 }
@@ -161,44 +163,130 @@ export default function VisualizarTablets() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 md:p-6">
-      <ToastContainer position="top-right"autoClose={4000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss  draggable pauseOnHover theme="light"
-        toastStyle={{borderRadius: "16px",  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",}}/>
-      <motion.div className="w-full max-w-7xl mx-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
-        {/* Enhanced Header */}
-        <motion.div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 mb-8 overflow-hidden"
-          whileHover={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10" />
-          <div className="relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <motion.div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg"
-                  whileHover={{ rotate: 5, scale: 1.1 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                  <TabletSmartphone className="w-8 h-8 text-white" />
-                </motion.div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">Gestão de Tablets</h1>
-                  <div className="flex items-center gap-2 mt-2">
-                    <motion.p className="text-gray-600 text-lg">{tabletCountText}</motion.p>
-                    <motion.div animate={{ scale: [1, 1.2, 1] }}transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}><TrendingUp className="w-5 h-5 text-emerald-500" /></motion.div>
-                  </div>
-                </div>
-              </div>
+<div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 md:p-6">
+  <ToastContainer
+    position="top-right"
+    autoClose={4000}
+    hideProgressBar={false}
+    newestOnTop
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    pauseOnHover
+    theme="light"
+    toastStyle={{
+      borderRadius: "16px",
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    }}
+  />
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <motion.button onClick={() => navigate("/views")} whileHover={{ scale: 1.05, x: -5 }} whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100/80 backdrop-blur-sm hover:bg-gray-200/80 text-gray-700 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"> 
-                <ArrowLeft className="w-5 h-5" /> Voltar</motion.button>
-                {tablets.length > 0 && (
-                  <motion.button onClick={exportToExcel} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300" >
-                    <Download className="w-5 h-5" /> Exportar ({filteredAndSortedTablets.length})
-                  </motion.button>
-                )}
+  <motion.div
+    className="w-full max-w-7xl mx-auto"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+  >
+    {/* Enhanced Header */}
+    <motion.div
+      className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 mb-8 overflow-hidden"
+      whileHover={{ scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10" />
+      <div className="relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <motion.div
+              className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg"
+              whileHover={{ rotate: 5, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <TabletSmartphone className="w-8 h-8 text-white" />
+            </motion.div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+                Gestão de Tablets
+              </h1>
+              <div className="flex items-center gap-2 mt-2">
+                <motion.p className="text-gray-600 text-lg">{tabletCountText}</motion.p>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                >
+                  <TrendingUp className="w-5 h-5 text-emerald-500" />
+                </motion.div>
               </div>
             </div>
           </div>
-        </motion.div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <motion.button
+              onClick={() => navigate("/views")}
+              whileHover={{ scale: 1.05, x: -5 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100/80 backdrop-blur-sm hover:bg-gray-200/80 text-gray-700 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <ArrowLeft className="w-5 h-5" /> Voltar
+            </motion.button>
+
+            {tablets.length > 0 && (
+              <motion.button
+                onClick={exportToExcel}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Download className="w-5 h-5" /> Exportar ({filteredAndSortedTablets.length})
+              </motion.button>
+            )}
+                                      <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setShowForm(true)}
+                          className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-2xl text-sm shadow-lg transition-all duration-300 flex items-center gap-3"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                          Termo de Empréstimo
+                        </motion.button>
+
+          </div>
+        </div>
+      </div>
+    </motion.div>
+
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-white">Termo de Empréstimo</h3>
+                  <button
+                    onClick={() => setShowForm(false)}
+                    className="text-white hover:text-gray-200 transition-colors p-2 hover:bg-white/20 rounded-xl"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <TermoEmprestimo />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
         {/* Enhanced Status Overview */}
         <motion.div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 mb-8"

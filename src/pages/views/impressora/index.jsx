@@ -1,98 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { getDatabase, ref, onValue } from "firebase/database";
-// import { app } from "../../../../firebase";
-// import { motion } from "framer-motion";
-// import {
-//   CheckCircle,
-//   XCircle,
-//   AlertCircle,
-//   Pencil,
-// } from "lucide-react";
-
-// const CONEXAO_CONFIG = {
-//   online: {
-//     cor: "bg-green-500",
-//     icone: <CheckCircle className="text-white w-6 h-6" />,
-//     texto: "Online",
-//   },
-//   offline: {
-//     cor: "bg-red-500",
-//     icone: <XCircle className="text-white w-6 h-6" />,
-//     texto: "Offline",
-//   },
-//   indefinido: {
-//     cor: "bg-gray-400",
-//     icone: <AlertCircle className="text-white w-6 h-6" />,
-//     texto: "Indefinido",
-//   },
-// };
-
-// export default function VisualizacaoImpressoras() {
-//   const [impressoras, setImpressoras] = useState([]);
-
-//   useEffect(() => {
-//     const db = getDatabase(app);
-//     const impressorasRefDB = ref(db, "impressoras");
-
-//     const unsubscribe = onValue(impressorasRefDB, (snapshot) => {
-//       const data = snapshot.val();
-//       if (!data) {
-//         setImpressoras([]);
-//         return;
-//       }
-
-//       const lista = Object.entries(data).map(([id, imp]) => ({
-//         id,
-//         ...imp,
-//         conexao: imp.status || "indefinido",
-//       }));
-
-//       setImpressoras(lista);
-//     });
-
-//     return () => unsubscribe();
-//   }, []);
-
-//   return (
-//     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-//       {impressoras.map((imp) => {
-//         const status = CONEXAO_CONFIG[imp.conexao.toLowerCase()] || CONEXAO_CONFIG.indefinido;
-
-//         return (
-//           <motion.div
-//             key={imp.id}
-//             initial={{ opacity: 0, scale: 0.95 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             transition={{ duration: 0.3 }}
-//             className={`rounded-xl p-4 shadow-md text-white relative ${status.cor}`}
-//           >
-//             <div className="absolute top-2 right-2">
-//               {status.icone}
-//             </div>
-//             <p className="text-lg font-semibold">{imp.modelo || "Sem nome"}</p>
-//             <p className="text-sm">
-//               <strong>IP:</strong> {imp.ip || "Não informado"}
-//             </p>
-//             <p className="text-sm">
-//               <strong>Status:</strong> {status.texto}
-//             </p>
-
-//             {/* Botão de edição */}
-//             <button
-//               className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-white text-gray-800 rounded-md text-sm shadow hover:bg-gray-100 transition"
-//               onClick={() => alert(`Editar: ${imp.modelo}`)}
-//             >
-//               <Pencil className="w-4 h-4" /> Editar
-//             </button>
-//           </motion.div>
-//         );
-//       })}
-//     </div>
-//   );
-// }
-
-"use client"
-
 import { useEffect, useState, useMemo } from "react"
 import { getDatabase, ref, onValue, update } from "firebase/database"
 import { app } from "../../../../firebase"
@@ -966,19 +871,19 @@ export default function VisualizacaoImpressoras() {
   const showToast = (message, type = "info") => {
     setToast({ message, type, id: Date.now() })
   }
-
+  
   const formatDate = (date) => {
-    if (!date) return "--"
+    if (!date) return "--";
     try {
-      const d = new Date(date)
-      const day = String(d.getUTCDate()).padStart(2, "0")
-      const month = String(d.getUTCMonth() + 1).padStart(2, "0")
-      const year = d.getUTCFullYear()
-      return `${day}/${month}/${year}`
+      const d = new Date(date);
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const year = d.getUTCFullYear();
+      return `${day}/${month}/${year}`;
     } catch {
-      return "--"
+      return "--";
     }
-  }
+  };
 
   const formatNotaFiscal = (nota) => {
     if (!nota) return "-"

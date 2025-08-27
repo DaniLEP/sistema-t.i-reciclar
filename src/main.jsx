@@ -7,6 +7,7 @@ import CamisetasCadastro from './pages/register/t-shirt'
 import DashboardChamados from './pages/listachamados/dashboard'
 import ChatChamado from './pages/listachamados/chatChamado'
 import GestaoUsuarios from './pages/gestãoUser'
+import TermoEmprestimo from './pages/termo'
 
 const App = lazy(() => import('./App.jsx'))
 const Login = lazy(() => import('./pages/auth/index'))
@@ -96,6 +97,7 @@ const router = createBrowserRouter([
       { path: 'admin/chat/:uid/:chamadoId', element: <ChatChamado /> },
       { path: '/dashboard-chamados', element: <DashboardChamados /> },
       { path: '/gestão-users', element: <GestaoUsuarios /> },
+      { path: '/termo', element: <TermoEmprestimo /> },
 
 
       
